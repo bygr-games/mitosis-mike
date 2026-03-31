@@ -5,11 +5,9 @@ package sample;
 	Similar to a jumping enemy pattern found in many 2D platformers.
 **/
 class RedEnemyStrategy implements EnemyStrategy {
-	var jumpCooldown = new dn.Cooldown(Const.FPS);
 	var jumpInterval = 0.8; // seconds between jumps
 
 	public function new() {
-		jumpCooldown.setS("jump", jumpInterval);
 	}
 
 	public function update(enemy:SampleEnemy):Void {
@@ -18,9 +16,8 @@ class RedEnemyStrategy implements EnemyStrategy {
 			enemy.vBase.addY(0.05);
 
 		// Try to jump
-		if( isOnGround(enemy) && !jumpCooldown.has("jump") ) {
+		if( isOnGround(enemy) && !enemy.cd.hasSetS("redEnemyJump", jumpInterval) ) {
 			enemy.vBase.addY(-0.85);
-			jumpCooldown.setS("jump", jumpInterval);
 		}
 	}
 
@@ -44,7 +41,6 @@ class RedEnemyStrategy implements EnemyStrategy {
 	}
 
 	public function dispose():Void {
-		jumpCooldown = null;
 	}
 
 	// Helper functions
