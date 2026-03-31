@@ -73,6 +73,39 @@ class Game extends AppChildProcess {
 		dn.Gc.runNow();
 	}
 
+	function getOrderedWorldLevels() : Array<World.World_Level> {
+		var allLevels:Dynamic = Assets.worldData.all_worlds.SampleWorld.all_levels;
+		var orderedLevels : Array<World.World_Level> = [];
+
+		for( levelId in Reflect.fields(allLevels) ) {
+			var l:World.World_Level = cast Reflect.field(allLevels, levelId);
+			if( l!=null )
+				orderedLevels.push(l);
+		}
+
+		orderedLevels.sort( (a,b)->a.uid-b.uid );
+		return orderedLevels;
+	}
+
+	public function startNextLevelWrap() {
+		if( level==null )
+			return;
+
+		var orderedLevels = getOrderedWorldLevels();
+		if( orderedLevels.length==0 )
+			return;
+
+		var curIdx = -1;
+		for( i in 0...orderedLevels.length )
+			if( orderedLevels[i].uid==level.data.uid ) {
+				curIdx = i;
+				break;
+			}
+
+		var nextIdx = (curIdx+1) % orderedLevels.length;
+		startLevel(orderedLevels[nextIdx]);
+	}
+
 
 
 	/** Called when either CastleDB or `const.json` changes on disk **/

@@ -11,17 +11,67 @@ package sample;
 class SamplePlayer extends Entity {
 	var ca : ControllerAccess<GameAction>;
 	var walkSpeed = 0.;
+	static var levelStartByUid : Map<Int,{ cx:Int, cy:Int }>;
 
 	// This is TRUE if the player is not falling
 	var onGround(get,never) : Bool;
 		inline function get_onGround() return !destroyed && vBase.dy==0 && yr==1 && level.hasCollision(cx,cy+1);
+
+	static function loadLevelStarts() {
+		if( levelStartByUid!=null )
+			return;
+
+		levelStartByUid = new Map();
+		var raw:Dynamic = haxe.Json.parse(hxd.Res.levels.sampleWorld.entry.getText());
+		var worlds:Array<Dynamic> = cast Reflect.field(raw, "worlds");
+		if( worlds==null )
+			return;
+
+		for( world in worlds ) {
+			var levels:Array<Dynamic> = cast Reflect.field(world, "levels");
+			if( levels==null )
+				continue;
+
+			for( l in levels ) {
+				var levelUid:Int = cast Reflect.field(l, "uid");
+				var layers:Array<Dynamic> = cast Reflect.field(l, "layerInstances");
+				if( layers==null )
+					continue;
+
+				for( layer in layers ) {
+					if( Reflect.field(layer, "__identifier")!="Entities" )
+						continue;
+
+					var entities:Array<Dynamic> = cast Reflect.field(layer, "entityInstances");
+					if( entities==null )
+						continue;
+
+					for( entity in entities ) {
+						if( Reflect.field(entity, "__identifier")=="PlayerStart" ) {
+							var grid:Array<Int> = cast Reflect.field(entity, "__grid");
+							if( grid!=null && grid.length>=2 )
+								levelStartByUid.set(levelUid, { cx:grid[0], cy:grid[1] });
+							break;
+						}
+					}
+
+					break;
+				}
+			}
+		}
+	}
+
+	inline function getCurrentLevelStart() {
+		loadLevelStarts();
+		return levelStartByUid.get(level.data.uid);
+	}
 
 
 	public function new() {
 		super(5,5);
 
 		// Start point using level entity "PlayerStart"
-		var start = level.data.l_Entities.all_PlayerStart[0];
+		var start = getCurrentLevelStart();
 		if( start!=null )
 			setPosCase(start.cx, start.cy);
 
@@ -45,6 +95,18 @@ class SamplePlayer extends Entity {
 	override function dispose() {
 		super.dispose();
 		ca.dispose(); // don't forget to dispose controller accesses
+	}
+
+
+	override function onDie() {
+		// Respawn at start instead of destroying
+		cancelVelocities();
+		initLife(1);
+		var start = getCurrentLevelStart();
+		if( start!=null )
+			setPosCase(start.cx, start.cy);
+		else
+			setPosCase(5, 5);
 	}
 
 
@@ -121,5 +183,18 @@ class SamplePlayer extends Entity {
 		// Apply requested walk movement
 		if( walkSpeed!=0 )
 			vBase.addX( walkSpeed*0.045 ); // some arbitrary speed
+
+		// Start next level when touching a PlayerExit entity
+		for( exit in level.data.l_Entities.all_PlayerExit )
+			if( distCase(null, exit.cx, exit.cy) < 1 ) {
+				if( !cd.hasSetS("levelExit", 0.2) )
+					app.delayer.nextFrame( ()->game.startNextLevelWrap() );
+				return;
+			}
+
+		// Die when touched by an enemy
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SampleEnemy) && distCase(e) < 1 )
+				kill(e);
 	}
 }
