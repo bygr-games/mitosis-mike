@@ -15,6 +15,12 @@ class BlueEnemyStrategy implements EnemyStrategy {
 		if( !isOnGround(enemy) )
 			enemy.vBase.addY(0.05);
 
+		// Turn before moving if there is a wall ahead or a cliff ahead
+		if( isOnGround(enemy) && ( isCollisionInDirection(enemy, currentDir) || isCliff(enemy, currentDir) ) ) {
+			currentDir *= -1;
+			enemy.dir = currentDir;
+		}
+
 		// Walk in current direction
 		enemy.vBase.addX(currentDir * walkSpeed);
 	}
@@ -29,11 +35,9 @@ class BlueEnemyStrategy implements EnemyStrategy {
 	}
 
 	public function onXCollision(enemy:SampleEnemy, dir:Int):Void {
-		// Hit a wall or cliff, turn around
-		if( isCollisionInDirection(enemy, currentDir) || isCliff(enemy, currentDir) ) {
-			currentDir *= -1;
-			enemy.dir = currentDir;
-		}
+		// If collision happened, force a turn around
+		currentDir *= -1;
+		enemy.dir = currentDir;
 	}
 
 	public function initGraphics(enemy:SampleEnemy):Void {
