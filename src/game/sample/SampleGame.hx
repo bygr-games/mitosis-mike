@@ -1,7 +1,7 @@
 package sample;
 
 /**
-	This small class just creates a SamplePlayer instance in current level
+	This small class creates game entities (player and enemies) from level data
 **/
 class SampleGame extends Game {
 	public function new() {
@@ -10,7 +10,23 @@ class SampleGame extends Game {
 
 	override function startLevel(l:World_Level) {
 		super.startLevel(l);
+		
+		// Spawn player
 		new SamplePlayer();
+
+		// Spawn blue enemies
+		if( level.data.l_Entities.all_BlueEnemy != null ) {
+			for( blueSpawn in level.data.l_Entities.all_BlueEnemy ) {
+				new SampleEnemy(blueSpawn.cx, blueSpawn.cy, "blue");
+			}
+		}
+
+		// Spawn red enemies
+		if( level.data.l_Entities.all_RedEnemy != null ) {
+			for( redSpawn in level.data.l_Entities.all_RedEnemy ) {
+				new SampleEnemy(redSpawn.cx, redSpawn.cy, "red");
+			}
+		}
 	}
 }
 

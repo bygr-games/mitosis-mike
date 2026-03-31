@@ -1,0 +1,32 @@
+package sample;
+
+/**
+	Strategy pattern interface for enemy AI and rendering behavior.
+	Each enemy type implements this to define its movement and appearance.
+**/
+interface EnemyStrategy {
+	/**
+		Called each fixedUpdate frame to update enemy physics and behavior
+	**/
+	function update(enemy:SampleEnemy):Void;
+
+	/**
+		Called on Y collision (landing on ground, hitting ceiling, etc)
+	**/
+	function onYCollision(enemy:SampleEnemy):Void;
+
+	/**
+		Called on X collision (hitting walls)
+	**/
+	function onXCollision(enemy:SampleEnemy, dir:Int):Void;
+
+	/**
+		Initialize the enemy's visual appearance
+	**/
+	function initGraphics(enemy:SampleEnemy):Void;
+
+	/**
+		Clean up resources
+	**/
+	function dispose():Void;
+}
