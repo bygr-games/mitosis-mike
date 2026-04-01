@@ -1,5 +1,7 @@
 package sample;
 
+import sample.Projectile;
+
 /**
 	SamplePlayer is an Entity with some extra functionalities:
 	- user controlled (using gamepad or keyboard)
@@ -169,6 +171,13 @@ class SamplePlayer extends Entity {
 		if( !isChargingAction() && ca.getAnalogDist2(MoveLeft,MoveRight)>0 ) {
 			// As mentioned above, we don't touch physics values (eg. `dx`) here. We just store some "requested walk speed", which will be applied to actual physics in fixedUpdate.
 			walkSpeed = ca.getAnalogValue2(MoveLeft,MoveRight); // -1 to 1
+			dir = walkSpeed>0 ? 1 : -1;
+		}
+
+		// Shoot
+		if( ca.isPressed(Shoot) && !cd.hasSetS("shootLock", 0.12) ) {
+			new Projectile(centerX + dir*8, centerY-4, dir, "basic");
+			ca.rumble(0.03, 0.03);
 		}
 	}
 
