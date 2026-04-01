@@ -7,6 +7,7 @@ package sample;
 	Supported types:
 	- "blue": walks back and forth, turns on collision/cliff
 	- "red": stays in place and jumps constantly
+	- "green": stays in place and shoots toward player every 3 seconds
 **/
 class SampleEnemy extends Entity {
 	var strategy : EnemyStrategy;
@@ -28,6 +29,7 @@ class SampleEnemy extends Entity {
 		strategy = switch(type.toLowerCase()) {
 			case "blue": new BlueEnemyStrategy();
 			case "red": new RedEnemyStrategy();
+			case "green": new GreenEnemyStrategy();
 			default: 
 				trace('Unknown enemy type: $type, defaulting to blue');
 				new BlueEnemyStrategy();

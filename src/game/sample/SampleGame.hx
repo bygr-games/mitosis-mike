@@ -27,6 +27,16 @@ class SampleGame extends Game {
 				new SampleEnemy(redSpawn.cx, redSpawn.cy, "red");
 			}
 		}
+
+		// Spawn green enemies (reflection keeps compatibility if LDtk entity is not defined yet)
+		var greenSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_GreenEnemy");
+		if( greenSpawns != null ) {
+			for( greenSpawn in greenSpawns ) {
+				var cx:Int = cast Reflect.field(greenSpawn, "cx");
+				var cy:Int = cast Reflect.field(greenSpawn, "cy");
+				new SampleEnemy(cx, cy, "green");
+			}
+		}
 	}
 }
 

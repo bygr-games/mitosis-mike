@@ -3,17 +3,20 @@ package sample;
 class Projectile extends Entity {
 	var strategy : ProjectileStrategy;
 	public var projectileType(default, null) : String;
+	public var targetType(default, null) : String;
 
-	public function new(x:Float, y:Float, shotDir:Int, type:String) {
+	public function new(x:Float, y:Float, shotDir:Int, type:String, target:String = "enemy") {
 		super(0, 0);
 
 		projectileType = type;
+		targetType = target.toLowerCase();
 		dir = shotDir;
 		setPosPixel(x, y);
 		vBase.setFricts(0.82, 1);
 
 		strategy = switch( type.toLowerCase() ) {
 			case "basic": new BasicProjectileStrategy();
+			case "violet": new VioletProjectileStrategy();
 			default:
 				trace('Unknown projectile type: $type, defaulting to basic');
 				new BasicProjectileStrategy();
@@ -54,16 +57,32 @@ class Projectile extends Entity {
 		if( destroyed )
 			return;
 
-		for( e in Entity.ALL ) {
-			if( e.destroyed || !e.is(SampleEnemy) )
-				continue;
+		switch( targetType ) {
+			case "player":
+				for( e in Entity.ALL ) {
+					if( e.destroyed || !e.is(SamplePlayer) )
+						continue;
 
-			if( Lib.rectangleOverlaps(left, top, wid, hei, e.left, e.top, e.wid, e.hei) ) {
-				var enemy = e.as(SampleEnemy);
-				enemy.kill(this);
-				strategy.onEnemyHit(this, enemy);
-				break;
-			}
+					if( Lib.rectangleOverlaps(left, top, wid, hei, e.left, e.top, e.wid, e.hei) ) {
+						var player = e.as(SamplePlayer);
+						player.kill(this);
+						strategy.onPlayerHit(this, player);
+						break;
+					}
+				}
+
+			default:
+				for( e in Entity.ALL ) {
+					if( e.destroyed || !e.is(SampleEnemy) )
+						continue;
+
+					if( Lib.rectangleOverlaps(left, top, wid, hei, e.left, e.top, e.wid, e.hei) ) {
+						var enemy = e.as(SampleEnemy);
+						enemy.kill(this);
+						strategy.onEnemyHit(this, enemy);
+						break;
+					}
+				}
 		}
 	}
 }

@@ -1,8 +1,8 @@
 package sample;
 
-class BasicProjectileStrategy implements ProjectileStrategy {
+class VioletProjectileStrategy implements ProjectileStrategy {
 	var speed = 0.16;
-	var lifetimeS = 1.2;
+	var lifetimeS = 2.0;
 
 	public function new() {}
 
@@ -14,13 +14,13 @@ class BasicProjectileStrategy implements ProjectileStrategy {
 		projectile.vBase.setFricts(0.82, 1);
 		projectile.cd.setS("projectileLife", lifetimeS);
 
-		var b = new h2d.Bitmap(h2d.Tile.fromColor(0xFFD55A, projectile.iwid, projectile.ihei), projectile.spr);
+		var b = new h2d.Bitmap(h2d.Tile.fromColor(0x8F00FF, projectile.iwid, projectile.ihei), projectile.spr);
 		b.tile.setCenterRatio(0.5, 0.5);
 	}
 
 	public function update(projectile:Projectile):Void {
 		if( !projectile.cd.has("projectileLife") ) {
-			emitImpact(projectile.centerX, projectile.centerY, 0xFFD55A);
+			emitImpact(projectile.centerX, projectile.centerY, 0x8F00FF);
 			projectile.destroy();
 			return;
 		}
@@ -33,22 +33,22 @@ class BasicProjectileStrategy implements ProjectileStrategy {
 			p.setScale(0.45);
 			p.alpha = 0.7;
 			p.lifeS = 0.15;
-			p.colorize(0xFFD55A);
+			p.colorize(0x8F00FF);
 		}
 	}
 
 	public function onXCollision(projectile:Projectile, dir:Int):Void {
-		emitImpact(projectile.centerX, projectile.centerY, 0xFFD55A);
+		emitImpact(projectile.centerX, projectile.centerY, 0x8F00FF);
 		projectile.destroy();
 	}
 
 	public function onEnemyHit(projectile:Projectile, enemy:SampleEnemy):Void {
-		emitImpact(enemy.centerX, enemy.centerY, 0xFF6D3A);
+		emitImpact(enemy.centerX, enemy.centerY, 0x8F00FF);
 		projectile.destroy();
 	}
 
 	public function onPlayerHit(projectile:Projectile, player:SamplePlayer):Void {
-		emitImpact(player.centerX, player.centerY, 0xFF6D3A);
+		emitImpact(player.centerX, player.centerY, 0x8F00FF);
 		projectile.destroy();
 	}
 
