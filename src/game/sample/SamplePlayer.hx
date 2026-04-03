@@ -30,7 +30,6 @@ class SamplePlayer extends Entity {
 		{ wid:6, hei:12 },
 		{ wid:4, hei:8 },
 		{ wid:3, hei:6 },
-		{ wid:2, hei:4 },
 	];
 
 	var ca : ControllerAccess<GameAction>;
