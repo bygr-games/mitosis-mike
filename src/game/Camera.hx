@@ -1,5 +1,5 @@
 class Camera extends GameChildProcess {
-	public static var MIN_ZOOM : Float = 1.0;
+	public static var MIN_ZOOM : Float = 0.1;
 	public static var MAX_ZOOM : Float = 10;
 
 
@@ -10,6 +10,8 @@ class Camera extends GameChildProcess {
 	var clampedFocus : LPoint;
 
 	var target : Null<Entity>;
+	var targetResolver : Null<LPoint->Bool>;
+	var resolvedTarget : LPoint;
 	public var targetOffX = 0.;
 	public var targetOffY = 0.;
 
@@ -83,6 +85,7 @@ class Camera extends GameChildProcess {
 		super();
 		rawFocus = LPoint.fromCase(0,0);
 		clampedFocus = LPoint.fromCase(0,0);
+		resolvedTarget = LPoint.fromCase(0,0);
 		dx = dy = 0;
 	}
 
@@ -155,6 +158,17 @@ class Camera extends GameChildProcess {
 	**/
 	public function trackEntity(e:Entity, immediate:Bool, speed=1.0) {
 		target = e;
+		targetResolver = null;
+		resolvedTarget.levelX = e.centerX;
+		resolvedTarget.levelY = e.centerY;
+		setTrackingSpeed(speed);
+		if( immediate || rawFocus.levelX==0 && rawFocus.levelY==0 )
+			centerOnTarget();
+	}
+
+	public function trackPoint(resolver:LPoint->Bool, immediate:Bool, speed=1.0) {
+		target = null;
+		targetResolver = resolver;
 		setTrackingSpeed(speed);
 		if( immediate || rawFocus.levelX==0 && rawFocus.levelY==0 )
 			centerOnTarget();
@@ -166,13 +180,29 @@ class Camera extends GameChildProcess {
 
 	public inline function stopTracking() {
 		target = null;
+		targetResolver = null;
 	}
 
 	public function centerOnTarget() {
-		if( target!=null ) {
-			rawFocus.levelX = target.centerX + targetOffX;
-			rawFocus.levelY = target.centerY + targetOffY;
+		if( resolveTarget(resolvedTarget) ) {
+			rawFocus.levelX = resolvedTarget.levelX + targetOffX;
+			rawFocus.levelY = resolvedTarget.levelY + targetOffY;
 		}
+	}
+
+	function resolveTarget(out:LPoint) {
+		if( target!=null ) {
+			if( target.destroyed ) {
+				target = null;
+				return false;
+			}
+
+			out.levelX = target.centerX;
+			out.levelY = target.centerY;
+			return true;
+		}
+
+		return targetResolver!=null && targetResolver(out);
 	}
 
 	public inline function levelToGlobalX(v:Float) return v*Const.SCALE + Game.ME.scroller.x;
@@ -324,12 +354,12 @@ class Camera extends GameChildProcess {
 		}
 
 
-		// Follow target entity
-		if( target!=null ) {
+		// Follow target entity or computed point
+		if( resolveTarget(resolvedTarget) ) {
 			var spdX = 0.015*trackingSpeed*zoom;
 			var spdY = 0.023*trackingSpeed*zoom;
-			var tx = target.centerX + targetOffX;
-			var ty = target.centerY + targetOffY;
+			var tx = resolvedTarget.levelX + targetOffX;
+			var ty = resolvedTarget.levelY + targetOffY;
 
 			var a = rawFocus.angTo(tx,ty);
 			var distX = M.fabs( tx - rawFocus.levelX );

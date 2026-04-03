@@ -11,6 +11,7 @@ class DebugDrone extends Entity {
 
 	var ca : ControllerAccess<GameAction>;
 	var prevCamTarget : Null<Entity>;
+	var prevCamTargetResolver : Null<LPoint->Bool>;
 	var prevCamZoom : Float;
 
 	var g : h2d.Graphics;
@@ -38,6 +39,7 @@ class DebugDrone extends Entity {
 		// Take control of camera
 		if( camera.target!=null && camera.target.isAlive() )
 			prevCamTarget = camera.target;
+		prevCamTargetResolver = camera.targetResolver;
 		prevCamZoom = camera.zoom;
 		camera.trackEntity(this,false);
 
@@ -72,9 +74,12 @@ class DebugDrone extends Entity {
 		// Try to restore camera state
 		if( prevCamTarget!=null )
 			camera.trackEntity(prevCamTarget, false);
+		else if( prevCamTargetResolver!=null )
+			camera.trackPoint(prevCamTargetResolver, false);
 		else
-			camera.target = null;
+			camera.stopTracking();
 		prevCamTarget = null;
+		prevCamTargetResolver = null;
 		camera.forceZoom( prevCamZoom );
 
 		super.dispose();

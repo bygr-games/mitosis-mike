@@ -17,6 +17,9 @@ class SamplePlayer extends Entity {
 	static inline var SPLIT_MIN_SPEED_Y = 0.45;
 	static inline var SPLIT_MAX_SPEED_Y = 0.72;
 	static inline var SPAWN_IMMUNITY_S = 1.0;
+	static inline var CAMERA_FIT_PADDING = 32.0;
+	static inline var CAMERA_VISIBLE_PADDING = 12.0;
+	static inline var CAMERA_DEFAULT_ZOOM = 1.0;
 
 	var ca : ControllerAccess<GameAction>;
 	var immunityShader : NegativeColorShader;
@@ -84,6 +87,89 @@ class SamplePlayer extends Entity {
 		return levelStartByUid.get(level.data.uid);
 	}
 
+	static function resolveSurvivorsMidpoint(out:LPoint) {
+		var totalX = 0.0;
+		var totalY = 0.0;
+		var count = 0;
+
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var player = e.as(SamplePlayer);
+				if( !player.isAlive() )
+					continue;
+
+				totalX += player.centerX;
+				totalY += player.centerY;
+				count++;
+			}
+
+		if( count==0 )
+			return false;
+
+		out.levelX = totalX / count;
+		out.levelY = totalY / count;
+		return true;
+	}
+
+	static function getSurvivorBounds() {
+		var minX = 9999999.0;
+		var minY = 9999999.0;
+		var maxX = -9999999.0;
+		var maxY = -9999999.0;
+		var count = 0;
+
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var player = e.as(SamplePlayer);
+				if( !player.isAlive() )
+					continue;
+
+				minX = M.fmin(minX, player.left);
+				minY = M.fmin(minY, player.top);
+				maxX = M.fmax(maxX, player.right);
+				maxY = M.fmax(maxY, player.bottom);
+				count++;
+			}
+
+		if( count==0 )
+			return null;
+
+		return {
+			minX:minX,
+			minY:minY,
+			maxX:maxX,
+			maxY:maxY,
+		};
+	}
+
+	static function updateSurvivorCameraZoom() {
+		if( !Game.exists() )
+			return;
+
+		var bounds = getSurvivorBounds();
+		if( bounds==null )
+			return;
+
+		var fitWidth = M.fmax(Const.GRID*2, bounds.maxX-bounds.minX) + CAMERA_FIT_PADDING*2;
+		var fitHeight = M.fmax(Const.GRID*2, bounds.maxY-bounds.minY) + CAMERA_FIT_PADDING*2;
+		var zoomX = Game.ME.stageWid / Const.SCALE / fitWidth;
+		var zoomY = Game.ME.stageHei / Const.SCALE / fitHeight;
+		var desiredZoom = M.fmin(CAMERA_DEFAULT_ZOOM, M.fmin(zoomX, zoomY));
+
+		var camera = Game.ME.camera;
+		var allVisible = bounds.minX >= camera.pxLeft + CAMERA_VISIBLE_PADDING
+			&& bounds.maxX <= camera.pxRight - CAMERA_VISIBLE_PADDING
+			&& bounds.minY >= camera.pxTop + CAMERA_VISIBLE_PADDING
+			&& bounds.maxY <= camera.pxBottom - CAMERA_VISIBLE_PADDING;
+
+		if( !allVisible || camera.zoom > desiredZoom ) {
+			camera.centerOnTarget();
+			camera.forceZoom(desiredZoom);
+		}
+		else
+			camera.zoomTo(desiredZoom);
+	}
+
 
 	public function new(?spawnX:Float, ?spawnY:Float, trackCamera=true) {
 		super(5,5);
@@ -100,10 +186,8 @@ class SamplePlayer extends Entity {
 		// Misc inits
 		vBase.setFricts(0.84, 0.94);
 
-		if( trackCamera ) {
-			camera.trackEntity(this, true);
-			camera.clampToLevelBounds = true;
-		}
+		camera.trackPoint(resolveSurvivorsMidpoint, trackCamera);
+		camera.clampToLevelBounds = true;
 
 		// Init controller
 		ca = App.ME.controller.createAccess();
@@ -336,6 +420,8 @@ class SamplePlayer extends Entity {
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SampleEnemy) && distCase(e) < 1 )
 				kill(e);
+
+		updateSurvivorCameraZoom();
 
 		updateAnimState();
 	}
