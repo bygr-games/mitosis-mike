@@ -10,6 +10,12 @@ class RedEnemyStrategy implements EnemyStrategy {
 	public function new() {
 	}
 
+	public function initHitbox(enemy:SampleEnemy):Void {
+		enemy.iwid = 16;
+		enemy.ihei = 16;
+		enemy.setPivots(0.5, 1);
+	}
+
 	public function update(enemy:SampleEnemy):Void {
 		// Apply gravity
 		if( !isOnGround(enemy) )
@@ -43,10 +49,10 @@ class RedEnemyStrategy implements EnemyStrategy {
 
 	// Helper functions
 	private function isOnGround(enemy:SampleEnemy):Bool {
-		return !enemy.destroyed && enemy.vBase.dy == 0 && enemy.yr == 1 && isCollisionBelow(enemy);
+		return !enemy.destroyed && enemy.vBase.dy == 0 && enemy.hasGroundSupport();
 	}
 
 	private function isCollisionBelow(enemy:SampleEnemy):Bool {
-		return enemy.level.hasCollision(enemy.cx, enemy.cy + 1);
+		return enemy.hasGroundSupport();
 	}
 }

@@ -10,6 +10,8 @@ package sample;
 	- "green": stays in place and shoots toward player every 3 seconds
 **/
 class SampleEnemy extends Entity {
+	static inline var COLLISION_EPSILON = 0.001;
+
 	var strategy : EnemyStrategy;
 	var enemyType : String;
 	var enemyLib : SpriteLib;
@@ -21,6 +23,69 @@ class SampleEnemy extends Entity {
 	var animFall : Null<String>;
 	var animShoot : Null<String>;
 	var currentAnim : Null<String>;
+
+	inline function pxToLevelCoord(v:Float) {
+		return Std.int(Math.floor(v / Const.GRID));
+	}
+
+	function getSolidColumnOnRight() : Null<Float> {
+		var probeCx = pxToLevelCoord(right);
+		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		for( probeCy in topCy...bottomCy+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return probeCx * Const.GRID;
+
+		return null;
+	}
+
+	function getSolidColumnOnLeft() : Null<Float> {
+		var probeCx = pxToLevelCoord(left - COLLISION_EPSILON);
+		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		for( probeCy in topCy...bottomCy+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return (probeCx + 1) * Const.GRID;
+
+		return null;
+	}
+
+	function getGroundCollisionRow() : Null<Float> {
+		var probeCy = pxToLevelCoord(bottom);
+		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
+		for( probeCx in leftCx...rightCx+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return probeCy * Const.GRID;
+
+		return null;
+	}
+
+	function getCeilingCollisionRow() : Null<Float> {
+		var probeCy = pxToLevelCoord(top - COLLISION_EPSILON);
+		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
+		for( probeCx in leftCx...rightCx+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return (probeCy + 1) * Const.GRID;
+
+		return null;
+	}
+
+	public inline function hasGroundSupport() {
+		return getGroundCollisionRow()!=null;
+	}
+
+	public inline function hasWallInDirection(dir:Int) {
+		return dir>0 ? getSolidColumnOnRight()!=null : getSolidColumnOnLeft()!=null;
+	}
+
+	public inline function hasGroundAhead(dir:Int) {
+		var probeX = dir>0 ? right + COLLISION_EPSILON : left - COLLISION_EPSILON;
+		var probeCx = pxToLevelCoord(probeX);
+		var probeCy = pxToLevelCoord(bottom + COLLISION_EPSILON);
+		return level.hasCollision(probeCx, probeCy);
+	}
 
 	/**
 		Create an enemy at a specific grid position with a given type
@@ -43,6 +108,8 @@ class SampleEnemy extends Entity {
 				trace('Unknown enemy type: $type, defaulting to blue');
 				new BlueEnemyStrategy();
 		}
+
+		strategy.initHitbox(this);
 
 		// Initialize graphics through strategy
 		strategy.initGraphics(this);
@@ -122,7 +189,7 @@ class SampleEnemy extends Entity {
 	}
 
 	inline function isOnGroundNow() {
-		return !destroyed && vBase.dy==0 && yr==1 && level.hasCollision(cx, cy+1);
+		return !destroyed && vBase.dy==0 && hasGroundSupport();
 	}
 
 	function applyAnim(group:Null<String>) {
@@ -166,14 +233,16 @@ class SampleEnemy extends Entity {
 		super.onPreStepX();
 
 		// Right collision
-		if( xr > 0.8 && level.hasCollision(cx + 1, cy) ) {
-			xr = 0.8;
+		var rightCollisionX = dxTotal>0 ? getSolidColumnOnRight() : null;
+		if( rightCollisionX!=null ) {
+			xr = rightCollisionX / Const.GRID - ( (1-pivotX) * wid ) / Const.GRID - cx;
 			strategy.onXCollision(this, 1);
 		}
 
 		// Left collision
-		if( xr < 0.2 && level.hasCollision(cx - 1, cy) ) {
-			xr = 0.2;
+		var leftCollisionX = dxTotal<0 ? getSolidColumnOnLeft() : null;
+		if( leftCollisionX!=null ) {
+			xr = leftCollisionX / Const.GRID + ( pivotX * wid ) / Const.GRID - cx;
 			strategy.onXCollision(this, -1);
 		}
 	}
@@ -183,16 +252,23 @@ class SampleEnemy extends Entity {
 		super.onPreStepY();
 
 		// Land on ground or hit ceiling
-		if( yr > 1 && level.hasCollision(cx, cy + 1) ) {
+		var groundCollisionY = dyTotal>0 ? getGroundCollisionRow() : null;
+		if( groundCollisionY!=null ) {
 			vBase.clearY();
 			vBump.clearY();
-			yr = 1;
+			yr = groundCollisionY / Const.GRID - ( (1-pivotY) * hei ) / Const.GRID - cy;
+			onPosManuallyChangedY();
 			strategy.onYCollision(this);
 		}
 
 		// Ceiling collision
-		if( yr < 0.2 && level.hasCollision(cx, cy - 1) )
-			yr = 0.2;
+		var ceilingCollisionY = dyTotal<0 ? getCeilingCollisionRow() : null;
+		if( ceilingCollisionY!=null ) {
+			vBase.clearY();
+			vBump.clearY();
+			yr = ceilingCollisionY / Const.GRID + ( pivotY * hei ) / Const.GRID - cy;
+			onPosManuallyChangedY();
+		}
 	}
 
 	/**

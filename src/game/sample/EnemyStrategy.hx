@@ -6,6 +6,11 @@ package sample;
 **/
 interface EnemyStrategy {
 	/**
+		Initialize the enemy's hitbox and pivots
+	**/
+	function initHitbox(enemy:SampleEnemy):Void;
+
+	/**
 		Called each fixedUpdate frame to update enemy physics and behavior
 	**/
 	function update(enemy:SampleEnemy):Void;

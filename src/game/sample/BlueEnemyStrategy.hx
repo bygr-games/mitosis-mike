@@ -10,6 +10,12 @@ class BlueEnemyStrategy implements EnemyStrategy {
 
 	public function new() {}
 
+	public function initHitbox(enemy:SampleEnemy):Void {
+		enemy.iwid = 16;
+		enemy.ihei = 16;
+		enemy.setPivots(0.5, 1);
+	}
+
 	public function update(enemy:SampleEnemy):Void {
 		// Apply gravity if not on ground
 		if( !isOnGround(enemy) )
@@ -48,19 +54,19 @@ class BlueEnemyStrategy implements EnemyStrategy {
 
 	// Helper functions
 	private function isOnGround(enemy:SampleEnemy):Bool {
-		return !enemy.destroyed && enemy.vBase.dy == 0 && enemy.yr == 1 && isCollisionBelow(enemy);
+		return !enemy.destroyed && enemy.vBase.dy == 0 && enemy.hasGroundSupport();
 	}
 
 	private function isCollisionBelow(enemy:SampleEnemy):Bool {
-		return enemy.level.hasCollision(enemy.cx, enemy.cy + 1);
+		return enemy.hasGroundSupport();
 	}
 
 	private function isCollisionInDirection(enemy:SampleEnemy, dir:Int):Bool {
-		return enemy.level.hasCollision(enemy.cx + dir, enemy.cy);
+		return enemy.hasWallInDirection(dir);
 	}
 
 	private function isCliff(enemy:SampleEnemy, dir:Int):Bool {
 		// A cliff is when there's ground below current position but no ground ahead
-		return isCollisionBelow(enemy) && !enemy.level.hasCollision(enemy.cx + dir, enemy.cy + 1);
+		return isCollisionBelow(enemy) && !enemy.hasGroundAhead(dir);
 	}
 }
