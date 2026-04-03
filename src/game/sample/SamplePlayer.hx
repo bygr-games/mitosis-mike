@@ -37,50 +37,131 @@ class SamplePlayer extends Entity {
 
 	// This is TRUE if the player is not falling
 	var onGround(get,never) : Bool;
-		inline function get_onGround() return !destroyed && vBase.dy==0 && getGroundCollisionRow()>=0;
+		inline function get_onGround() return !destroyed && vBase.dy==0 && hasGroundSupport();
 
 	inline function pxToLevelCoord(v:Float) {
 		return Std.int(Math.floor(v / Const.GRID));
 	}
 
-	function getSolidColumnOnRight() {
+	inline function isSolidPlayer(other:SamplePlayer) {
+		return other!=this && !other.destroyed && other.isAlive();
+	}
+
+	inline function overlapsPlayerX(other:SamplePlayer) {
+		return right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON;
+	}
+
+	inline function overlapsPlayerY(other:SamplePlayer) {
+		return bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
+	}
+
+	function getSolidColumnOnRight() : Null<Float> {
 		var probeCx = pxToLevelCoord(right);
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		for( probeCy in topCy...bottomCy+1 )
 			if( level.hasCollision(probeCx, probeCy) )
-				return probeCx;
-		return -1;
+				return probeCx * Const.GRID;
+
+		var best:Null<Float> = null;
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var other = e.as(SamplePlayer);
+				if( !isSolidPlayer(other) || !overlapsPlayerY(other) )
+					continue;
+
+				if( right > other.left && left < other.left && centerX <= other.centerX )
+					if( best==null || other.left<best )
+						best = other.left;
+			}
+
+		return best;
 	}
 
-	function getSolidColumnOnLeft() {
+	function getSolidColumnOnLeft() : Null<Float> {
 		var probeCx = pxToLevelCoord(left - COLLISION_EPSILON);
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		for( probeCy in topCy...bottomCy+1 )
 			if( level.hasCollision(probeCx, probeCy) )
-				return probeCx;
-		return -1;
+				return (probeCx + 1) * Const.GRID;
+
+		var best:Null<Float> = null;
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var other = e.as(SamplePlayer);
+				if( !isSolidPlayer(other) || !overlapsPlayerY(other) )
+					continue;
+
+				if( left < other.right && right > other.right && centerX >= other.centerX )
+					if( best==null || other.right>best )
+						best = other.right;
+			}
+
+		return best;
 	}
 
-	function getGroundCollisionRow() {
+	function getGroundCollisionRow() : Null<Float> {
 		var probeCy = pxToLevelCoord(bottom);
 		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
 		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
 		for( probeCx in leftCx...rightCx+1 )
 			if( level.hasCollision(probeCx, probeCy) )
-				return probeCy;
-		return -1;
+				return probeCy * Const.GRID;
+
+		var best:Null<Float> = null;
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var other = e.as(SamplePlayer);
+				if( !isSolidPlayer(other) || !overlapsPlayerX(other) )
+					continue;
+
+				if( bottom > other.top && top < other.top && centerY <= other.centerY )
+					if( best==null || other.top<best )
+						best = other.top;
+			}
+
+		return best;
 	}
 
-	function getCeilingCollisionRow() {
+	function getCeilingCollisionRow() : Null<Float> {
 		var probeCy = pxToLevelCoord(top - COLLISION_EPSILON);
 		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
 		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
 		for( probeCx in leftCx...rightCx+1 )
 			if( level.hasCollision(probeCx, probeCy) )
-				return probeCy;
-		return -1;
+				return (probeCy + 1) * Const.GRID;
+
+		var best:Null<Float> = null;
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var other = e.as(SamplePlayer);
+				if( !isSolidPlayer(other) || !overlapsPlayerX(other) )
+					continue;
+
+				if( top < other.bottom && bottom > other.bottom && centerY >= other.centerY )
+					if( best==null || other.bottom>best )
+						best = other.bottom;
+			}
+
+		return best;
+	}
+
+	function hasGroundSupport() {
+		if( getGroundCollisionRow()!=null )
+			return true;
+
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var other = e.as(SamplePlayer);
+				if( !isSolidPlayer(other) )
+					continue;
+
+				if( right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON && M.fabs(bottom - other.top) <= COLLISION_EPSILON*4 )
+					return true;
+			}
+
+		return false;
 	}
 
 	static function loadLevelStarts() {
@@ -312,7 +393,7 @@ class SamplePlayer extends Entity {
 	}
 
 	inline function isOnGroundNow() {
-		return !destroyed && vBase.dy==0 && getGroundCollisionRow()>=0;
+		return !destroyed && vBase.dy==0 && hasGroundSupport();
 	}
 
 	function applyAnim(group:Null<String>) {
@@ -379,14 +460,14 @@ class SamplePlayer extends Entity {
 		super.onPreStepX();
 
 		// Right collision
-		var rightCollisionCx = dxTotal>0 ? getSolidColumnOnRight() : -1;
-		if( rightCollisionCx>=0 )
-			xr = rightCollisionCx - ( (1-pivotX) * wid ) / Const.GRID - cx;
+		var rightCollisionX = dxTotal>0 ? getSolidColumnOnRight() : null;
+		if( rightCollisionX!=null )
+			xr = rightCollisionX / Const.GRID - ( (1-pivotX) * wid ) / Const.GRID - cx;
 
 		// Left collision
-		var leftCollisionCx = dxTotal<0 ? getSolidColumnOnLeft() : -1;
-		if( leftCollisionCx>=0 )
-			xr = leftCollisionCx + 1 + ( pivotX * wid ) / Const.GRID - cx;
+		var leftCollisionX = dxTotal<0 ? getSolidColumnOnLeft() : null;
+		if( leftCollisionX!=null )
+			xr = leftCollisionX / Const.GRID + ( pivotX * wid ) / Const.GRID - cx;
 	}
 
 
@@ -395,20 +476,20 @@ class SamplePlayer extends Entity {
 		super.onPreStepY();
 
 		// Land on ground
-		var groundCollisionCy = dyTotal>0 ? getGroundCollisionRow() : -1;
-		if( groundCollisionCy>=0 ) {
+		var groundCollisionY = dyTotal>0 ? getGroundCollisionRow() : null;
+		if( groundCollisionY!=null ) {
 			setSquashY(0.5);
 			vBase.clearY();
 			vBump.clearY();
-			yr = groundCollisionCy - ( (1-pivotY) * hei ) / Const.GRID - cy;
+			yr = groundCollisionY / Const.GRID - ( (1-pivotY) * hei ) / Const.GRID - cy;
 			ca.rumble(0.2, 0.06);
 			onPosManuallyChangedY();
 		}
 
 		// Ceiling collision
-		var ceilingCollisionCy = dyTotal<0 ? getCeilingCollisionRow() : -1;
-		if( ceilingCollisionCy>=0 )
-			yr = ceilingCollisionCy + 1 + ( pivotY * hei ) / Const.GRID - cy;
+		var ceilingCollisionY = dyTotal<0 ? getCeilingCollisionRow() : null;
+		if( ceilingCollisionY!=null )
+			yr = ceilingCollisionY / Const.GRID + ( pivotY * hei ) / Const.GRID - cy;
 	}
 
 
