@@ -16,6 +16,7 @@ class SamplePlayer extends Entity {
 	static inline var SPLIT_MAX_SPEED_X = 0.38;
 	static inline var SPLIT_MIN_SPEED_Y = 0.45;
 	static inline var SPLIT_MAX_SPEED_Y = 0.72;
+	static inline var COLLISION_EPSILON = 0.001;
 	static inline var SPAWN_IMMUNITY_S = 1.0;
 	static inline var CAMERA_FIT_PADDING = 32.0;
 	static inline var CAMERA_VISIBLE_PADDING = 12.0;
@@ -36,7 +37,51 @@ class SamplePlayer extends Entity {
 
 	// This is TRUE if the player is not falling
 	var onGround(get,never) : Bool;
-		inline function get_onGround() return !destroyed && vBase.dy==0 && yr==1 && level.hasCollision(cx,cy+1);
+		inline function get_onGround() return !destroyed && vBase.dy==0 && getGroundCollisionRow()>=0;
+
+	inline function pxToLevelCoord(v:Float) {
+		return Std.int(Math.floor(v / Const.GRID));
+	}
+
+	function getSolidColumnOnRight() {
+		var probeCx = pxToLevelCoord(right);
+		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		for( probeCy in topCy...bottomCy+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return probeCx;
+		return -1;
+	}
+
+	function getSolidColumnOnLeft() {
+		var probeCx = pxToLevelCoord(left - COLLISION_EPSILON);
+		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		for( probeCy in topCy...bottomCy+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return probeCx;
+		return -1;
+	}
+
+	function getGroundCollisionRow() {
+		var probeCy = pxToLevelCoord(bottom);
+		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
+		for( probeCx in leftCx...rightCx+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return probeCy;
+		return -1;
+	}
+
+	function getCeilingCollisionRow() {
+		var probeCy = pxToLevelCoord(top - COLLISION_EPSILON);
+		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
+		for( probeCx in leftCx...rightCx+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return probeCy;
+		return -1;
+	}
 
 	static function loadLevelStarts() {
 		if( levelStartByUid!=null )
@@ -173,6 +218,8 @@ class SamplePlayer extends Entity {
 
 	public function new(?spawnX:Float, ?spawnY:Float, trackCamera=true) {
 		super(5,5);
+		iwid = 16;
+		ihei = 32;
 
 		if( spawnX!=null && spawnY!=null )
 			setPosPixel(spawnX, spawnY);
@@ -265,7 +312,7 @@ class SamplePlayer extends Entity {
 	}
 
 	inline function isOnGroundNow() {
-		return !destroyed && vBase.dy==0 && yr==1 && level.hasCollision(cx,cy+1);
+		return !destroyed && vBase.dy==0 && getGroundCollisionRow()>=0;
 	}
 
 	function applyAnim(group:Null<String>) {
@@ -332,12 +379,14 @@ class SamplePlayer extends Entity {
 		super.onPreStepX();
 
 		// Right collision
-		if( xr>0.8 && level.hasCollision(cx+1,cy) )
-			xr = 0.8;
+		var rightCollisionCx = dxTotal>0 ? getSolidColumnOnRight() : -1;
+		if( rightCollisionCx>=0 )
+			xr = rightCollisionCx - ( (1-pivotX) * wid ) / Const.GRID - cx;
 
 		// Left collision
-		if( xr<0.2 && level.hasCollision(cx-1,cy) )
-			xr = 0.2;
+		var leftCollisionCx = dxTotal<0 ? getSolidColumnOnLeft() : -1;
+		if( leftCollisionCx>=0 )
+			xr = leftCollisionCx + 1 + ( pivotX * wid ) / Const.GRID - cx;
 	}
 
 
@@ -346,18 +395,20 @@ class SamplePlayer extends Entity {
 		super.onPreStepY();
 
 		// Land on ground
-		if( yr>1 && level.hasCollision(cx,cy+1) ) {
+		var groundCollisionCy = dyTotal>0 ? getGroundCollisionRow() : -1;
+		if( groundCollisionCy>=0 ) {
 			setSquashY(0.5);
 			vBase.clearY();
 			vBump.clearY();
-			yr = 1;
+			yr = groundCollisionCy - ( (1-pivotY) * hei ) / Const.GRID - cy;
 			ca.rumble(0.2, 0.06);
 			onPosManuallyChangedY();
 		}
 
 		// Ceiling collision
-		if( yr<0.2 && level.hasCollision(cx,cy-1) )
-			yr = 0.2;
+		var ceilingCollisionCy = dyTotal<0 ? getCeilingCollisionRow() : -1;
+		if( ceilingCollisionCy>=0 )
+			yr = ceilingCollisionCy + 1 + ( pivotY * hei ) / Const.GRID - cy;
 	}
 
 
