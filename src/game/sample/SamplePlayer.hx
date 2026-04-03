@@ -22,7 +22,7 @@ class SamplePlayer extends Entity {
 	static inline var SPAWN_IMMUNITY_S = 1.0;
 	static inline var CAMERA_FIT_PADDING = 32.0;
 	static inline var CAMERA_VISIBLE_PADDING = 12.0;
-	static inline var CAMERA_DEFAULT_ZOOM = 1.0;
+	static inline var CAMERA_DEFAULT_ZOOM = 1;
 	static var SIZE_LEVELS = [
 		{ wid:16, hei:32 },
 		{ wid:12, hei:24 },
@@ -31,7 +31,6 @@ class SamplePlayer extends Entity {
 		{ wid:4, hei:8 },
 		{ wid:3, hei:6 },
 		{ wid:2, hei:4 },
-		{ wid:1, hei:2 },
 	];
 
 	var ca : ControllerAccess<GameAction>;
@@ -348,6 +347,25 @@ class SamplePlayer extends Entity {
 		return sizeLevel < SIZE_LEVELS.length-1;
 	}
 
+	inline function isSmallestSize() {
+		return sizeLevel == SIZE_LEVELS.length-1;
+	}
+
+	inline function isEnemyThreat(from:Null<Entity>) {
+		if( from==null || !isSmallestSize() )
+			return false;
+
+		if( from.is(SampleEnemy) )
+			return true;
+
+		if( from.is(Projectile) ) {
+			var projectile = from.as(Projectile);
+			return projectile!=null && projectile.targetType=="player";
+		}
+
+		return false;
+	}
+
 	function applySizeLevel() {
 		var size = getSizeData();
 		iwid = size.wid;
@@ -357,7 +375,7 @@ class SamplePlayer extends Entity {
 	}
 
 	override public function hit(dmg:Int, from:Null<Entity>) {
-		if( ucd.has("spawnImmunity") )
+		if( ucd.has("spawnImmunity") || isEnemyThreat(from) )
 			return;
 
 		super.hit(dmg, from);
@@ -486,6 +504,28 @@ class SamplePlayer extends Entity {
 		dir = horizontalSpeed>=0 ? 1 : -1;
 	}
 
+	function resolveEnemyPush(enemy:SampleEnemy) {
+		var overlapLeft = right - enemy.left;
+		var overlapRight = enemy.right - left;
+		var overlapUp = bottom - enemy.top;
+		var overlapDown = enemy.bottom - top;
+		var pushX = centerX < enemy.centerX ? -overlapLeft : overlapRight;
+		var pushY = centerY < enemy.centerY ? -overlapUp : overlapDown;
+
+		if( M.fabs(pushX) <= M.fabs(pushY) ) {
+			setPosPixel(attachX + pushX, attachY);
+			vBase.clearX();
+			vBump.clearX();
+			bump(pushX<0 ? -0.03 : 0.03, 0);
+		}
+		else {
+			setPosPixel(attachX, attachY + pushY);
+			vBase.clearY();
+			vBump.clearY();
+			bump(0, pushY<0 ? -0.03 : 0.03);
+		}
+	}
+
 
 	/** X collisions **/
 	override function onPreStepX() {
@@ -580,10 +620,20 @@ class SamplePlayer extends Entity {
 				return;
 			}
 
-		// Die when touched by an enemy
+		// Enemy body contact
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleEnemy) && distCase(e) < 1 )
-				kill(e);
+			if( !e.destroyed && e.is(SampleEnemy) ) {
+				var enemy = e.as(SampleEnemy);
+				if( !Lib.rectangleOverlaps(left, top, wid, hei, enemy.left, enemy.top, enemy.wid, enemy.hei) )
+					continue;
+
+				if( isSmallestSize() )
+					resolveEnemyPush(enemy);
+				else {
+					kill(enemy);
+					break;
+				}
+			}
 
 		updateSurvivorCameraZoom();
 
