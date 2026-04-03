@@ -11,6 +11,13 @@ import sample.Projectile;
 **/
 
 class SamplePlayer extends Entity {
+	static inline var SPLIT_COUNT = 2;
+	static inline var SPLIT_MIN_SPEED_X = 0.22;
+	static inline var SPLIT_MAX_SPEED_X = 0.38;
+	static inline var SPLIT_MIN_SPEED_Y = 0.45;
+	static inline var SPLIT_MAX_SPEED_Y = 0.72;
+	static inline var SPAWN_IMMUNITY_S = 1.0;
+
 	var ca : ControllerAccess<GameAction>;
 	var walkSpeed = 0.;
 	static var levelStartByUid : Map<Int,{ cx:Int, cy:Int }>;
@@ -77,26 +84,39 @@ class SamplePlayer extends Entity {
 	}
 
 
-	public function new() {
+	public function new(?spawnX:Float, ?spawnY:Float, trackCamera=true) {
 		super(5,5);
 
-		// Start point using level entity "PlayerStart"
-		var start = getCurrentLevelStart();
-		if( start!=null )
-			setPosCase(start.cx, start.cy);
+		if( spawnX!=null && spawnY!=null )
+			setPosPixel(spawnX, spawnY);
+		else {
+			// Start point using level entity "PlayerStart"
+			var start = getCurrentLevelStart();
+			if( start!=null )
+				setPosCase(start.cx, start.cy);
+		}
 
 		// Misc inits
 		vBase.setFricts(0.84, 0.94);
 
-		// Camera tracks this
-		camera.trackEntity(this, true);
-		camera.clampToLevelBounds = true;
+		if( trackCamera ) {
+			camera.trackEntity(this, true);
+			camera.clampToLevelBounds = true;
+		}
 
 		// Init controller
 		ca = App.ME.controller.createAccess();
 		ca.lockCondition = Game.isGameControllerLocked;
+		ucd.setS("spawnImmunity", SPAWN_IMMUNITY_S);
 
 		initGraphics();
+	}
+
+	override public function hit(dmg:Int, from:Null<Entity>) {
+		if( ucd.has("spawnImmunity") )
+			return;
+
+		super.hit(dmg, from);
 	}
 
 	function initGraphics() {
@@ -192,14 +212,26 @@ class SamplePlayer extends Entity {
 
 
 	override function onDie() {
-		// Respawn at start instead of destroying
+		var spawnX = attachX;
+		var spawnY = attachY;
+
+		for( i in 0...SPLIT_COUNT ) {
+			var child = new SamplePlayer(spawnX, spawnY, i==0);
+			child.applySplitFling(i);
+		}
+
+		destroy();
+	}
+
+	function applySplitFling(index:Int) {
 		cancelVelocities();
-		initLife(1);
-		var start = getCurrentLevelStart();
-		if( start!=null )
-			setPosCase(start.cx, start.cy);
-		else
-			setPosCase(5, 5);
+		var baseDir = index==0 ? -1 : 1;
+		var horizontalSpeed = rnd(SPLIT_MIN_SPEED_X, SPLIT_MAX_SPEED_X) * baseDir;
+		var verticalSpeed = -rnd(SPLIT_MIN_SPEED_Y, SPLIT_MAX_SPEED_Y);
+		var horizontalJitter = rnd(0, 0.12, true);
+		vBase.addX(horizontalSpeed + horizontalJitter);
+		vBase.addY(verticalSpeed);
+		dir = horizontalSpeed>=0 ? 1 : -1;
 	}
 
 
