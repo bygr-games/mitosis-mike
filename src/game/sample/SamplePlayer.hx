@@ -19,6 +19,7 @@ class SamplePlayer extends Entity {
 	static inline var SPAWN_IMMUNITY_S = 1.0;
 
 	var ca : ControllerAccess<GameAction>;
+	var immunityShader : NegativeColorShader;
 	var walkSpeed = 0.;
 	static var levelStartByUid : Map<Int,{ cx:Int, cy:Int }>;
 	var fallbackBitmap : Null<h2d.Bitmap>;
@@ -108,6 +109,8 @@ class SamplePlayer extends Entity {
 		ca = App.ME.controller.createAccess();
 		ca.lockCondition = Game.isGameControllerLocked;
 		ucd.setS("spawnImmunity", SPAWN_IMMUNITY_S);
+		immunityShader = new NegativeColorShader();
+		spr.addShader(immunityShader);
 
 		initGraphics();
 	}
@@ -117,6 +120,11 @@ class SamplePlayer extends Entity {
 			return;
 
 		super.hit(dmg, from);
+	}
+
+	override function postUpdate() {
+		super.postUpdate();
+		immunityShader.intensity = ucd.has("spawnImmunity") ? 1 : 0;
 	}
 
 	function initGraphics() {
@@ -330,5 +338,21 @@ class SamplePlayer extends Entity {
 				kill(e);
 
 		updateAnimState();
+	}
+}
+
+private class NegativeColorShader extends hxsl.Shader {
+	static var SRC = {
+		@param var intensity : Float;
+		var pixelColor : Vec4;
+
+		function fragment() {
+			pixelColor.rgb = pixelColor.rgb * (1.0 - intensity) + (vec3(1.0) - pixelColor.rgb) * intensity;
+		}
+	};
+
+	public function new() {
+		super();
+		intensity = 0;
 	}
 }
