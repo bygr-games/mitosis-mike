@@ -41,9 +41,7 @@ class BlueEnemyStrategy implements EnemyStrategy {
 	}
 
 	public function initGraphics(enemy:SampleEnemy):Void {
-		// Create blue square (0000FF)
-		var b = new h2d.Bitmap(h2d.Tile.fromColor(0x0000FF, Std.int(enemy.iwid), Std.int(enemy.ihei)), enemy.spr);
-		b.tile.setCenterRatio(0.5, 1);
+		// Graphics are now managed centrally in SampleEnemy.
 	}
 
 	public function dispose():Void {}

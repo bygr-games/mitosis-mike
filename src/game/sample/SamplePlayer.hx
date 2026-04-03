@@ -14,6 +14,14 @@ class SamplePlayer extends Entity {
 	var ca : ControllerAccess<GameAction>;
 	var walkSpeed = 0.;
 	static var levelStartByUid : Map<Int,{ cx:Int, cy:Int }>;
+	var fallbackBitmap : Null<h2d.Bitmap>;
+
+	var animIdle : Null<String>;
+	var animRun : Null<String>;
+	var animJump : Null<String>;
+	var animFall : Null<String>;
+	var animShoot : Null<String>;
+	var currentAnim : Null<String>;
 
 	// This is TRUE if the player is not falling
 	var onGround(get,never) : Bool;
@@ -88,9 +96,92 @@ class SamplePlayer extends Entity {
 		ca = App.ME.controller.createAccess();
 		ca.lockCondition = Game.isGameControllerLocked;
 
-		// Placeholder display
-		var b = new h2d.Bitmap( h2d.Tile.fromColor(Green, iwid, ihei), spr );
-		b.tile.setCenterRatio(0.5,1);
+		initGraphics();
+	}
+
+	function initGraphics() {
+		animIdle = resolveFirstExisting([
+			"idle",
+			"player_idle",
+			"samplePlayer_idle",
+			"sample_player_idle",
+			"player"
+		]);
+		animRun = resolveFirstExisting([
+			"run",
+			"player_run",
+			"samplePlayer_run",
+			"sample_player_run"
+		]);
+		animJump = resolveFirstExisting([
+			"jump",
+			"player_jump",
+			"samplePlayer_jump",
+			"sample_player_jump"
+		]);
+		animFall = resolveFirstExisting([
+			"fall",
+			"player_fall",
+			"samplePlayer_fall",
+			"sample_player_fall"
+		]);
+		animShoot = resolveFirstExisting([
+			"shoot",
+			"player_shoot",
+			"samplePlayer_shoot",
+			"sample_player_shoot"
+		]);
+
+		if( animIdle!=null )
+			applyAnim(animIdle);
+		else
+			createFallbackBitmap();
+	}
+
+	function createFallbackBitmap() {
+		if( fallbackBitmap!=null )
+			return;
+		fallbackBitmap = new h2d.Bitmap( h2d.Tile.fromColor(Green, iwid, ihei), spr );
+		fallbackBitmap.tile.setCenterRatio(0.5,1);
+	}
+
+	function resolveFirstExisting(candidates:Array<String>) : Null<String> {
+		for( id in candidates )
+			if( Assets.player.exists(id) )
+				return id;
+		return null;
+	}
+
+	inline function isOnGroundNow() {
+		return !destroyed && vBase.dy==0 && yr==1 && level.hasCollision(cx,cy+1);
+	}
+
+	function applyAnim(group:Null<String>) {
+		if( group==null || currentAnim==group )
+			return;
+
+		currentAnim = group;
+		spr.set(Assets.player, group, 0);
+
+		if( spr.group!=null && spr.group.anim!=null && spr.group.anim.length>0 )
+			spr.anim.playAndLoop(group);
+		else if( spr.animAllocated )
+			spr.anim.stopWithoutStateAnims(group, 0);
+	}
+
+	function updateAnimState() {
+		var next : Null<String>;
+
+		if( cd.has("shootLock") && animShoot!=null )
+			next = animShoot;
+		else if( !isOnGroundNow() )
+			next = dyTotal<0 ? (animJump!=null ? animJump : animIdle) : (animFall!=null ? animFall : animIdle);
+		else if( M.fabs(dxTotal)>0.03 )
+			next = animRun!=null ? animRun : animIdle;
+		else
+			next = animIdle;
+
+		applyAnim(next);
 	}
 
 
@@ -205,5 +296,7 @@ class SamplePlayer extends Entity {
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SampleEnemy) && distCase(e) < 1 )
 				kill(e);
+
+		updateAnimState();
 	}
 }

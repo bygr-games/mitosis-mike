@@ -35,9 +35,7 @@ class RedEnemyStrategy implements EnemyStrategy {
 	}
 
 	public function initGraphics(enemy:SampleEnemy):Void {
-		// Create red square (FF0000)
-		var b = new h2d.Bitmap(h2d.Tile.fromColor(0xFF0000, Std.int(enemy.iwid), Std.int(enemy.ihei)), enemy.spr);
-		b.tile.setCenterRatio(0.5, 1);
+		// Graphics are now managed centrally in SampleEnemy.
 	}
 
 	public function dispose():Void {

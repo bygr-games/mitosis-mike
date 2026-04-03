@@ -13,8 +13,10 @@ class GreenEnemyStrategy implements EnemyStrategy {
 		if( player!=null ) {
 			enemy.dir = player.centerX >= enemy.centerX ? 1 : -1;
 
-			if( !enemy.cd.hasSetS("greenEnemyShoot", shootIntervalS) )
+			if( !enemy.cd.hasSetS("greenEnemyShoot", shootIntervalS) ) {
+				enemy.cd.setS("enemyShootAnim", 0.1);
 				new Projectile(enemy.centerX + enemy.dir * 8, enemy.centerY - 4, enemy.dir, "violet", "player");
+			}
 		}
 	}
 
@@ -31,8 +33,7 @@ class GreenEnemyStrategy implements EnemyStrategy {
 	}
 
 	public function initGraphics(enemy:SampleEnemy):Void {
-		var b = new h2d.Bitmap(h2d.Tile.fromColor(0x008000, Std.int(enemy.iwid), Std.int(enemy.ihei)), enemy.spr);
-		b.tile.setCenterRatio(0.5, 1);
+		// Graphics are now managed centrally in SampleEnemy.
 	}
 
 	public function dispose():Void {}

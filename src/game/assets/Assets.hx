@@ -12,6 +12,12 @@ class Assets {
 
 	/** Main atlas **/
 	public static var tiles : SpriteLib;
+	/** Player atlas **/
+	public static var player : SpriteLib;
+	/** Enemy atlases **/
+	public static var enemyRed : SpriteLib;
+	public static var enemyBlue : SpriteLib;
+	public static var enemyGreen : SpriteLib;
 
 	/** LDtk world data **/
 	public static var worldData : World;
@@ -29,6 +35,10 @@ class Assets {
 
 		// build sprite atlas directly from Aseprite file
 		tiles = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.tiles.toAseprite());
+		player = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.player.toAseprite());
+		enemyRed = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_red.toAseprite());
+		enemyBlue = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_blue.toAseprite());
+		enemyGreen = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_green.toAseprite());
 
 		// Hot-reloading of CastleDB
 		#if debug
@@ -83,6 +93,10 @@ class Assets {
 			tmod = 0;
 
 		tiles.tmod = tmod;
+		player.tmod = tmod;
+		enemyRed.tmod = tmod;
+		enemyBlue.tmod = tmod;
+		enemyGreen.tmod = tmod;
 		// <-- add other atlas TMOD updates here
 	}
 
