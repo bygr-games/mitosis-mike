@@ -11,6 +11,8 @@ import sample.Projectile;
 **/
 
 class SamplePlayer extends Entity {
+	static inline var BASE_WIDTH = 16;
+	static inline var BASE_HEIGHT = 32;
 	static inline var SPLIT_COUNT = 2;
 	static inline var SPLIT_MIN_SPEED_X = 0.22;
 	static inline var SPLIT_MAX_SPEED_X = 0.38;
@@ -21,12 +23,23 @@ class SamplePlayer extends Entity {
 	static inline var CAMERA_FIT_PADDING = 32.0;
 	static inline var CAMERA_VISIBLE_PADDING = 12.0;
 	static inline var CAMERA_DEFAULT_ZOOM = 1.0;
+	static var SIZE_LEVELS = [
+		{ wid:16, hei:32 },
+		{ wid:12, hei:24 },
+		{ wid:8, hei:16 },
+		{ wid:6, hei:12 },
+		{ wid:4, hei:8 },
+		{ wid:3, hei:6 },
+		{ wid:2, hei:4 },
+		{ wid:1, hei:2 },
+	];
 
 	var ca : ControllerAccess<GameAction>;
 	var immunityShader : NegativeColorShader;
 	var walkSpeed = 0.;
 	static var levelStartByUid : Map<Int,{ cx:Int, cy:Int }>;
 	var fallbackBitmap : Null<h2d.Bitmap>;
+	var sizeLevel(default,null) : Int;
 
 	var animIdle : Null<String>;
 	var animRun : Null<String>;
@@ -297,10 +310,10 @@ class SamplePlayer extends Entity {
 	}
 
 
-	public function new(?spawnX:Float, ?spawnY:Float, trackCamera=true) {
+	public function new(?spawnX:Float, ?spawnY:Float, trackCamera=true, sizeLevel=0) {
 		super(5,5);
-		iwid = 16;
-		ihei = 32;
+		this.sizeLevel = M.iclamp(sizeLevel, 0, SIZE_LEVELS.length-1);
+		applySizeLevel();
 
 		if( spawnX!=null && spawnY!=null )
 			setPosPixel(spawnX, spawnY);
@@ -325,6 +338,22 @@ class SamplePlayer extends Entity {
 		spr.addShader(immunityShader);
 
 		initGraphics();
+	}
+
+	inline function getSizeData() {
+		return SIZE_LEVELS[sizeLevel];
+	}
+
+	inline function hasNextSizeLevel() {
+		return sizeLevel < SIZE_LEVELS.length-1;
+	}
+
+	function applySizeLevel() {
+		var size = getSizeData();
+		iwid = size.wid;
+		ihei = size.hei;
+		sprScaleX = wid / BASE_WIDTH;
+		sprScaleY = hei / BASE_HEIGHT;
 	}
 
 	override public function hit(dmg:Int, from:Null<Entity>) {
@@ -434,10 +463,13 @@ class SamplePlayer extends Entity {
 	override function onDie() {
 		var spawnX = attachX;
 		var spawnY = attachY;
+		var childSizeLevel = sizeLevel + 1;
 
-		for( i in 0...SPLIT_COUNT ) {
-			var child = new SamplePlayer(spawnX, spawnY, i==0);
-			child.applySplitFling(i);
+		if( hasNextSizeLevel() ) {
+			for( i in 0...SPLIT_COUNT ) {
+				var child = new SamplePlayer(spawnX, spawnY, i==0, childSizeLevel);
+				child.applySplitFling(i);
+			}
 		}
 
 		destroy();
