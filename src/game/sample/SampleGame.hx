@@ -37,6 +37,15 @@ class SampleGame extends Game {
 				new SampleEnemy(cx, cy, "green");
 			}
 		}
+
+		var scaredSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_ScaredEnemy");
+		if( scaredSpawns != null ) {
+			for( scaredSpawn in scaredSpawns ) {
+				var cx:Int = cast Reflect.field(scaredSpawn, "cx");
+				var cy:Int = cast Reflect.field(scaredSpawn, "cy");
+				new SampleEnemy(cx, cy, "scared");
+			}
+		}
 	}
 }
 

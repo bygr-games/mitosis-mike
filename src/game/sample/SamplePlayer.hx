@@ -609,7 +609,7 @@ class SamplePlayer extends Entity {
 				if( !Lib.rectangleOverlaps(left, top, wid, hei, enemy.left, enemy.top, enemy.wid, enemy.hei) )
 					continue;
 
-				if( isSmallestSize() )
+				if( isSmallestSize() || enemy.isHarmless() )
 					resolveEnemyPush(enemy);
 				else {
 					kill(enemy);

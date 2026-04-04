@@ -8,6 +8,7 @@ package sample;
 	- "blue": walks back and forth, turns on collision/cliff
 	- "red": stays in place and jumps constantly
 	- "green": stays in place and shoots toward player every 3 seconds
+	- "scared": runs away from nearby players and does not hurt them on contact
 **/
 class SampleEnemy extends Entity {
 	static inline var COLLISION_EPSILON = 0.001;
@@ -23,6 +24,10 @@ class SampleEnemy extends Entity {
 	var animFall : Null<String>;
 	var animShoot : Null<String>;
 	var currentAnim : Null<String>;
+
+	public inline function isHarmless() {
+		return enemyType=="scared";
+	}
 
 	inline function pxToLevelCoord(v:Float) {
 		return Std.int(Math.floor(v / Const.GRID));
@@ -104,6 +109,7 @@ class SampleEnemy extends Entity {
 			case "blue": new BlueEnemyStrategy();
 			case "red": new RedEnemyStrategy();
 			case "green": new GreenEnemyStrategy();
+			case "scared": new ScaredEnemyStrategy();
 			default: 
 				trace('Unknown enemy type: $type, defaulting to blue');
 				new BlueEnemyStrategy();
@@ -121,6 +127,7 @@ class SampleEnemy extends Entity {
 			case "red": Assets.enemyRed;
 			case "blue": Assets.enemyBlue;
 			case "green": Assets.enemyGreen;
+			case "scared": Assets.enemyScared;
 			default: Assets.enemyBlue;
 		}
 
@@ -162,6 +169,7 @@ class SampleEnemy extends Entity {
 			case "blue": 0x0000FF;
 			case "red": 0xFF0000;
 			case "green": 0x008000;
+			case "scared": 0x7A7AFF;
 			default: 0xBBBBBB;
 		}
 
