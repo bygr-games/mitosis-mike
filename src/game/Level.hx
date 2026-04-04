@@ -32,6 +32,8 @@ class Level extends GameChildProcess {
 			if( data.l_Collisions.getInt(cx,cy)==1 )
 				marks.set(M_Coll_Wall, cx,cy);
 		}
+
+		addInvisibleWallCollisions();
 	}
 
 	override function onDispose() {
@@ -56,6 +58,47 @@ class Level extends GameChildProcess {
 	/** Return TRUE if "Collisions" layer contains a collision value **/
 	public inline function hasCollision(cx,cy) : Bool {
 		return !isValid(cx,cy) ? true : marks.has(M_Coll_Wall, cx,cy);
+	}
+
+	function addInvisibleWallCollisions() {
+		var invisibleWalls:Array<Dynamic> = cast Reflect.field(data.l_Entities, "all_InvisibleWall");
+		if( invisibleWalls==null )
+			return;
+
+		for( wall in invisibleWalls ) {
+			var grid = getEntityGrid(wall);
+			var wallCx = grid.cx;
+			var wallCy = grid.cy;
+			var wallCWid = M.imax(1, M.ceil(getEntitySize(wall, "width") / Const.GRID));
+			var wallCHei = M.imax(1, M.ceil(getEntitySize(wall, "height") / Const.GRID));
+
+			for( cy in wallCy...wallCy + wallCHei )
+				for( cx in wallCx...wallCx + wallCWid )
+					if( isValid(cx,cy) )
+						marks.set(M_Coll_Wall, cx,cy);
+		}
+	}
+
+	function getEntityGrid(entity:Dynamic) {
+		var cx = readEntityInt(entity, "cx", null);
+		var cy = readEntityInt(entity, "cy", null);
+		if( cx!=null && cy!=null )
+			return { cx:cx, cy:cy };
+
+		var grid:Array<Int> = cast Reflect.field(entity, "__grid");
+		return {
+			cx: grid!=null && grid.length>0 ? grid[0] : 0,
+			cy: grid!=null && grid.length>1 ? grid[1] : 0,
+		};
+	}
+
+	function getEntitySize(entity:Dynamic, field:String) : Int {
+		return readEntityInt(entity, field, Const.GRID);
+	}
+
+	function readEntityInt(entity:Dynamic, field:String, defaultValue:Null<Int>) : Null<Int> {
+		var value = Reflect.field(entity, field);
+		return value==null ? defaultValue : Std.int(value);
 	}
 
 	/** Render current level**/
