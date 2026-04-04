@@ -16,6 +16,9 @@ class SamplePlayer extends Entity {
 	static inline var SPLIT_MAX_SPEED_X = 0.38;
 	static inline var SPLIT_MIN_SPEED_Y = 0.45;
 	static inline var SPLIT_MAX_SPEED_Y = 0.72;
+	static inline var SPLIT_SPAWN_SEARCH_STEP = 2.0;
+	static inline var SPLIT_SPAWN_SEARCH_RADIUS = 48.0;
+	static inline var SPLIT_SPAWN_SEARCH_HEIGHT = 32.0;
 	static inline var COLLISION_EPSILON = 0.001;
 	static inline var SPAWN_IMMUNITY_S = 1.0;
 	static inline var CAMERA_FIT_PADDING = 32.0;
@@ -55,6 +58,18 @@ class SamplePlayer extends Entity {
 		return other!=this && !other.destroyed && other.isAlive();
 	}
 
+	inline function isSolidEnemy(other:SampleEnemy) {
+		return !other.destroyed && other.isAlive();
+	}
+
+	inline function isSpawnImmune() {
+		return ucd.has("spawnImmunity");
+	}
+
+	inline function collidesWithEnemies() {
+		return isSpawnImmune();
+	}
+
 	inline function overlapsPlayerX(other:SamplePlayer) {
 		return right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON;
 	}
@@ -63,7 +78,106 @@ class SamplePlayer extends Entity {
 		return bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
 	}
 
-	function getSolidColumnOnRight() : Null<Float> {
+	inline function overlapsEnemyX(other:SampleEnemy) {
+		return right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON;
+	}
+
+	inline function overlapsEnemyY(other:SampleEnemy) {
+		return bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
+	}
+
+	function isPlacementFreeAt(targetAttachX:Float, targetAttachY:Float) {
+		var targetLeft = targetAttachX - pivotX * wid;
+		var targetRight = targetAttachX + (1-pivotX) * wid;
+		var targetTop = targetAttachY - pivotY * hei;
+		var targetBottom = targetAttachY + (1-pivotY) * hei;
+		var leftCx = pxToLevelCoord(targetLeft + COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(targetRight - COLLISION_EPSILON);
+		var topCy = pxToLevelCoord(targetTop + COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(targetBottom - COLLISION_EPSILON);
+
+		for( probeCy in topCy...bottomCy+1 )
+			for( probeCx in leftCx...rightCx+1 )
+				if( level.hasCollision(probeCx, probeCy) )
+					return false;
+
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var other = e.as(SamplePlayer);
+				if( !isSolidPlayer(other) )
+					continue;
+
+				var overlapsX = targetRight > other.left + COLLISION_EPSILON && targetLeft < other.right - COLLISION_EPSILON;
+				var overlapsY = targetBottom > other.top + COLLISION_EPSILON && targetTop < other.bottom - COLLISION_EPSILON;
+				if( overlapsX && overlapsY )
+					return false;
+			}
+
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SampleEnemy) ) {
+				var other = e.as(SampleEnemy);
+				if( !isSolidEnemy(other) )
+					continue;
+
+				var overlapsX = targetRight > other.left + COLLISION_EPSILON && targetLeft < other.right - COLLISION_EPSILON;
+				var overlapsY = targetBottom > other.top + COLLISION_EPSILON && targetTop < other.bottom - COLLISION_EPSILON;
+				if( overlapsX && overlapsY )
+					return false;
+			}
+
+		return true;
+	}
+
+	function placeAtNearestSafeSplitPosition(baseAttachX:Float, baseAttachY:Float, preferredDir:Int) {
+		var horizontalSteps = M.ceil(SPLIT_SPAWN_SEARCH_RADIUS / SPLIT_SPAWN_SEARCH_STEP);
+		var verticalSteps = M.ceil(SPLIT_SPAWN_SEARCH_HEIGHT / SPLIT_SPAWN_SEARCH_STEP);
+
+		for( horizontalStep in 0...horizontalSteps+1 ) {
+			var preferredOffsetX = preferredDir * horizontalStep * SPLIT_SPAWN_SEARCH_STEP;
+			var alternateOffsetX = -preferredOffsetX;
+
+			for( verticalStep in 0...verticalSteps+1 ) {
+				var offsetY = -verticalStep * SPLIT_SPAWN_SEARCH_STEP;
+
+				if( isPlacementFreeAt(baseAttachX + preferredOffsetX, baseAttachY + offsetY) ) {
+					setPosPixel(baseAttachX + preferredOffsetX, baseAttachY + offsetY);
+					return;
+				}
+
+				if( horizontalStep>0 && isPlacementFreeAt(baseAttachX + alternateOffsetX, baseAttachY + offsetY) ) {
+					setPosPixel(baseAttachX + alternateOffsetX, baseAttachY + offsetY);
+					return;
+				}
+			}
+		}
+
+		var fallbackStep = Const.GRID * 0.5;
+		var fallbackStepsX = M.ceil(level.pxWid / fallbackStep);
+		var fallbackStepsY = M.ceil(level.pxHei / fallbackStep);
+		var bestDist:Float = Const.INFINITE;
+		var bestX:Float = baseAttachX;
+		var bestY:Float = baseAttachY;
+
+		for( stepY in 0...fallbackStepsY+1 )
+			for( stepX in 0...fallbackStepsX+1 ) {
+				var candidateX = stepX * fallbackStep;
+				var candidateY = stepY * fallbackStep;
+				if( !isPlacementFreeAt(candidateX, candidateY) )
+					continue;
+
+				var dist = M.dist(baseAttachX, baseAttachY, candidateX, candidateY);
+				if( dist<bestDist ) {
+					bestDist = dist;
+					bestX = candidateX;
+					bestY = candidateY;
+				}
+			}
+
+		if( bestDist<Const.INFINITE )
+			setPosPixel(bestX, bestY);
+	}
+
+	function  getSolidColumnOnRight() : Null<Float> {
 		var probeCx = pxToLevelCoord(right);
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
@@ -82,6 +196,18 @@ class SamplePlayer extends Entity {
 					if( best==null || other.left<best )
 						best = other.left;
 			}
+
+		if( collidesWithEnemies() )
+			for( e in Entity.ALL )
+				if( !e.destroyed && e.is(SampleEnemy) ) {
+					var other = e.as(SampleEnemy);
+					if( !isSolidEnemy(other) || !overlapsEnemyY(other) )
+						continue;
+
+					if( right > other.left && left < other.left && centerX <= other.centerX )
+						if( best==null || other.left<best )
+							best = other.left;
+				}
 
 		return best;
 	}
@@ -106,6 +232,18 @@ class SamplePlayer extends Entity {
 						best = other.right;
 			}
 
+		if( collidesWithEnemies() )
+			for( e in Entity.ALL )
+				if( !e.destroyed && e.is(SampleEnemy) ) {
+					var other = e.as(SampleEnemy);
+					if( !isSolidEnemy(other) || !overlapsEnemyY(other) )
+						continue;
+
+					if( left < other.right && right > other.right && centerX >= other.centerX )
+						if( best==null || other.right>best )
+							best = other.right;
+				}
+
 		return best;
 	}
 
@@ -128,6 +266,18 @@ class SamplePlayer extends Entity {
 					if( best==null || other.top<best )
 						best = other.top;
 			}
+
+		if( collidesWithEnemies() )
+			for( e in Entity.ALL )
+				if( !e.destroyed && e.is(SampleEnemy) ) {
+					var other = e.as(SampleEnemy);
+					if( !isSolidEnemy(other) || !overlapsEnemyX(other) )
+						continue;
+
+					if( bottom > other.top && top < other.top && centerY <= other.centerY )
+						if( best==null || other.top<best )
+							best = other.top;
+				}
 
 		return best;
 	}
@@ -152,6 +302,18 @@ class SamplePlayer extends Entity {
 						best = other.bottom;
 			}
 
+		if( collidesWithEnemies() )
+			for( e in Entity.ALL )
+				if( !e.destroyed && e.is(SampleEnemy) ) {
+					var other = e.as(SampleEnemy);
+					if( !isSolidEnemy(other) || !overlapsEnemyX(other) )
+						continue;
+
+					if( top < other.bottom && bottom > other.bottom && centerY >= other.centerY )
+						if( best==null || other.bottom>best )
+							best = other.bottom;
+				}
+
 		return best;
 	}
 
@@ -168,6 +330,17 @@ class SamplePlayer extends Entity {
 				if( right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON && M.fabs(bottom - other.top) <= COLLISION_EPSILON*4 )
 					return true;
 			}
+
+		if( collidesWithEnemies() )
+			for( e in Entity.ALL )
+				if( !e.destroyed && e.is(SampleEnemy) ) {
+					var other = e.as(SampleEnemy);
+					if( !isSolidEnemy(other) )
+						continue;
+
+					if( right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON && M.fabs(bottom - other.top) <= COLLISION_EPSILON*4 )
+						return true;
+				}
 
 		return false;
 	}
@@ -375,7 +548,7 @@ class SamplePlayer extends Entity {
 	}
 
 	override public function hit(dmg:Int, from:Null<Entity>) {
-		if( ucd.has("spawnImmunity") || isEnemyThreat(from) )
+		if( isSpawnImmune() || isEnemyThreat(from) )
 			return;
 
 		super.hit(dmg, from);
@@ -383,7 +556,7 @@ class SamplePlayer extends Entity {
 
 	override function postUpdate() {
 		super.postUpdate();
-		immunityShader.intensity = ucd.has("spawnImmunity") ? 1 : 0;
+		immunityShader.intensity = isSpawnImmune() ? 1 : 0;
 	}
 
 	function initGraphics() {
@@ -478,6 +651,7 @@ class SamplePlayer extends Entity {
 		if( hasNextSizeLevel() ) {
 			for( i in 0...SPLIT_COUNT ) {
 				var child = new SamplePlayer(spawnX, spawnY, i==0, childSizeLevel);
+				child.placeAtNearestSafeSplitPosition(spawnX, spawnY, i==0 ? -1 : 1);
 				child.applySplitFling(i);
 			}
 		}
@@ -504,14 +678,32 @@ class SamplePlayer extends Entity {
 		var pushX = centerX < enemy.centerX ? -overlapLeft : overlapRight;
 		var pushY = centerY < enemy.centerY ? -overlapUp : overlapDown;
 
+		function tryResolve(targetAttachX:Float, targetAttachY:Float) {
+			if( !isPlacementFreeAt(targetAttachX, targetAttachY) )
+				return false;
+
+			setPosPixel(targetAttachX, targetAttachY);
+			return true;
+		}
+
 		if( M.fabs(pushX) <= M.fabs(pushY) ) {
-			setPosPixel(attachX + pushX, attachY);
+			if( !tryResolve(attachX + pushX, attachY) ) {
+				if( !tryResolve(attachX, attachY + pushY) ) {
+					placeAtNearestSafeSplitPosition(attachX, attachY, pushX<0 ? -1 : 1);
+					return;
+				}
+			}
 			vBase.clearX();
 			vBump.clearX();
 			bump(pushX<0 ? -0.03 : 0.03, 0);
 		}
 		else {
-			setPosPixel(attachX, attachY + pushY);
+			if( !tryResolve(attachX, attachY + pushY) ) {
+				if( !tryResolve(attachX + pushX, attachY) ) {
+					placeAtNearestSafeSplitPosition(attachX, attachY, pushX<0 ? -1 : 1);
+					return;
+				}
+			}
 			vBase.clearY();
 			vBump.clearY();
 			bump(0, pushY<0 ? -0.03 : 0.03);
@@ -621,7 +813,7 @@ class SamplePlayer extends Entity {
 				if( !Lib.rectangleOverlaps(left, top, wid, hei, enemy.left, enemy.top, enemy.wid, enemy.hei) )
 					continue;
 
-				if( isSmallestSize() || enemy.isHarmless() )
+				if( isSpawnImmune() || isSmallestSize() || enemy.isHarmless() )
 					resolveEnemyPush(enemy);
 				else {
 					kill(enemy);
