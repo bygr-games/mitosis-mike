@@ -17,7 +17,7 @@ class Assets {
 	/** Enemy atlases **/
 	public static var enemyRed : SpriteLib;
 	public static var enemyBlue : SpriteLib;
-	public static var enemyGreen : SpriteLib;
+	public static var enemyShooting : SpriteLib;
 	public static var enemyScared : SpriteLib;
 
 	/** LDtk world data **/
@@ -39,7 +39,7 @@ class Assets {
 		player = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.player.toAseprite());
 		enemyRed = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_red.toAseprite());
 		enemyBlue = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_blue.toAseprite());
-		enemyGreen = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_green.toAseprite());
+		enemyShooting = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_shooting.toAseprite());
 		enemyScared = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_scared.toAseprite());
 
 		// Hot-reloading of CastleDB
@@ -98,7 +98,7 @@ class Assets {
 		player.tmod = tmod;
 		enemyRed.tmod = tmod;
 		enemyBlue.tmod = tmod;
-		enemyGreen.tmod = tmod;
+		enemyShooting.tmod = tmod;
 		enemyScared.tmod = tmod;
 		// <-- add other atlas TMOD updates here
 	}

@@ -28,13 +28,15 @@ class SampleGame extends Game {
 			}
 		}
 
-		// Spawn green enemies (reflection keeps compatibility if LDtk entity is not defined yet)
-		var greenSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_GreenEnemy");
-		if( greenSpawns != null ) {
-			for( greenSpawn in greenSpawns ) {
-				var cx:Int = cast Reflect.field(greenSpawn, "cx");
-				var cy:Int = cast Reflect.field(greenSpawn, "cy");
-				new SampleEnemy(cx, cy, "green");
+		// Spawn shooting enemies (fall back to the old name to avoid breaking older maps)
+		var shootingSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_ShootingEnemy");
+		if( shootingSpawns == null )
+			shootingSpawns = cast Reflect.field(level.data.l_Entities, "all_GreenEnemy");
+		if( shootingSpawns != null ) {
+			for( shootingSpawn in shootingSpawns ) {
+				var cx:Int = cast Reflect.field(shootingSpawn, "cx");
+				var cy:Int = cast Reflect.field(shootingSpawn, "cy");
+				new SampleEnemy(cx, cy, "shooting");
 			}
 		}
 

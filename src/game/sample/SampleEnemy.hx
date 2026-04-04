@@ -7,7 +7,7 @@ package sample;
 	Supported types:
 	- "blue": walks back and forth, turns on collision/cliff
 	- "red": stays in place and jumps constantly
-	- "green": stays in place and shoots toward player every 3 seconds
+	- "shooting": stays in place, shoots toward player every 3 seconds, and does not hurt on contact
 	- "scared": runs away from nearby players and does not hurt them on contact
 **/
 class SampleEnemy extends Entity {
@@ -26,7 +26,7 @@ class SampleEnemy extends Entity {
 	var currentAnim : Null<String>;
 
 	public inline function isHarmless() {
-		return enemyType=="scared";
+		return enemyType=="scared" || enemyType=="shooting" || enemyType=="green";
 	}
 
 	inline function pxToLevelCoord(v:Float) {
@@ -108,7 +108,7 @@ class SampleEnemy extends Entity {
 		strategy = switch(type.toLowerCase()) {
 			case "blue": new BlueEnemyStrategy();
 			case "red": new RedEnemyStrategy();
-			case "green": new GreenEnemyStrategy();
+			case "shooting", "green": new ShootingEnemyStrategy();
 			case "scared": new ScaredEnemyStrategy();
 			default: 
 				trace('Unknown enemy type: $type, defaulting to blue');
@@ -126,7 +126,7 @@ class SampleEnemy extends Entity {
 		enemyLib = switch(enemyType) {
 			case "red": Assets.enemyRed;
 			case "blue": Assets.enemyBlue;
-			case "green": Assets.enemyGreen;
+			case "shooting", "green": Assets.enemyShooting;
 			case "scared": Assets.enemyScared;
 			default: Assets.enemyBlue;
 		}
@@ -168,7 +168,7 @@ class SampleEnemy extends Entity {
 		var col = switch(enemyType) {
 			case "blue": 0x0000FF;
 			case "red": 0xFF0000;
-			case "green": 0x008000;
+			case "shooting", "green": 0x008000;
 			case "scared": 0x7A7AFF;
 			default: 0xBBBBBB;
 		}

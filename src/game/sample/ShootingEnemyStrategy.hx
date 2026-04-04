@@ -1,13 +1,13 @@
 package sample;
 
-class GreenEnemyStrategy implements EnemyStrategy {
+class ShootingEnemyStrategy implements EnemyStrategy {
 	var shootIntervalS = 3.0;
 
 	public function new() {}
 
 	public function initHitbox(enemy:SampleEnemy):Void {
 		enemy.iwid = 16;
-		enemy.ihei = 16;
+		enemy.ihei = 32;
 		enemy.setPivots(0.5, 1);
 	}
 
@@ -19,7 +19,7 @@ class GreenEnemyStrategy implements EnemyStrategy {
 		if( player!=null ) {
 			enemy.dir = player.centerX >= enemy.centerX ? 1 : -1;
 
-			if( !enemy.cd.hasSetS("greenEnemyShoot", shootIntervalS) ) {
+			if( !enemy.cd.hasSetS("shootingEnemyShoot", shootIntervalS) ) {
 				enemy.cd.setS("enemyShootAnim", 0.1);
 				new Projectile(enemy.centerX + enemy.dir * 8, enemy.centerY - 4, enemy.dir, "violet", "player");
 			}
@@ -35,7 +35,7 @@ class GreenEnemyStrategy implements EnemyStrategy {
 	}
 
 	public function onXCollision(enemy:SampleEnemy, dir:Int):Void {
-		// Green enemy does not move horizontally.
+		// Shooting enemy does not move horizontally.
 	}
 
 	public function initGraphics(enemy:SampleEnemy):Void {
