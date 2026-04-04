@@ -25,7 +25,8 @@ class BasicProjectileStrategy implements ProjectileStrategy {
 			return;
 		}
 
-		projectile.vBase.addX(projectile.dir * speed);
+		projectile.vBase.addX(projectile.shotVelX * speed);
+		projectile.vBase.addY(projectile.shotVelY * speed);
 
 		if( !projectile.cd.hasSetS("projectileTrail", 0.03) ) {
 			var p = projectile.fx.allocMain_add(D.tiles.fxDot, projectile.centerX, projectile.centerY);
@@ -38,6 +39,11 @@ class BasicProjectileStrategy implements ProjectileStrategy {
 	}
 
 	public function onXCollision(projectile:Projectile, dir:Int):Void {
+		emitImpact(projectile.centerX, projectile.centerY, 0xFFD55A);
+		projectile.destroy();
+	}
+
+	public function onYCollision(projectile:Projectile, dir:Int):Void {
 		emitImpact(projectile.centerX, projectile.centerY, 0xFFD55A);
 		projectile.destroy();
 	}

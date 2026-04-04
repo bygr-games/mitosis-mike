@@ -15,13 +15,18 @@ class ShootingEnemyStrategy implements EnemyStrategy {
 		if( !isOnGround(enemy) )
 			enemy.vBase.addY(0.05);
 
-		var player = getPlayer();
-		if( player!=null ) {
-			enemy.dir = player.centerX >= enemy.centerX ? 1 : -1;
+		var shootUpward = hasAnyPlayerOnTop(enemy);
+		var closestPlayer = shootUpward ? null : getClosestPlayer(enemy);
+		if( shootUpward || closestPlayer!=null ) {
+			if( !shootUpward )
+				enemy.dir = closestPlayer.centerX >= enemy.centerX ? 1 : -1;
 
 			if( !enemy.cd.hasSetS("shootingEnemyShoot", shootIntervalS) ) {
 				enemy.cd.setS("enemyShootAnim", 0.1);
-				new Projectile(enemy.centerX + enemy.dir * 8, enemy.centerY - 4, enemy.dir, "violet", "player");
+				if( shootUpward )
+					new Projectile(enemy.centerX, enemy.top + 4, enemy.dir, "violet", "player", 0, -1);
+				else
+					new Projectile(enemy.centerX + enemy.dir * 8, enemy.centerY - 4, enemy.dir, "violet", "player");
 			}
 		}
 	}
@@ -44,12 +49,35 @@ class ShootingEnemyStrategy implements EnemyStrategy {
 
 	public function dispose():Void {}
 
-	function getPlayer():SamplePlayer {
-		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) )
-				return e.as(SamplePlayer);
+	function getClosestPlayer(enemy:SampleEnemy):SamplePlayer {
+		var closest : Null<SamplePlayer> = null;
+		var closestDist = 999999.0;
 
-		return null;
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var player = e.as(SamplePlayer);
+				var dist = M.fabs(player.centerX - enemy.centerX);
+				if( dist < closestDist ) {
+					closest = player;
+					closestDist = dist;
+				}
+			}
+
+		return closest;
+	}
+
+	function hasAnyPlayerOnTop(enemy:SampleEnemy):Bool {
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) && isPlayerOnTop(enemy, e.as(SamplePlayer)) )
+				return true;
+
+		return false;
+	}
+
+	function isPlayerOnTop(enemy:SampleEnemy, player:SamplePlayer):Bool {
+		return player.right > enemy.left + 2
+			&& player.left < enemy.right - 2
+			&& player.bottom <= enemy.top + 6;
 	}
 
 	private function isOnGround(enemy:SampleEnemy):Bool {

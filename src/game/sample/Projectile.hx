@@ -4,13 +4,17 @@ class Projectile extends Entity {
 	var strategy : ProjectileStrategy;
 	public var projectileType(default, null) : String;
 	public var targetType(default, null) : String;
+	public var shotVelX(default, null) : Float;
+	public var shotVelY(default, null) : Float;
 
-	public function new(x:Float, y:Float, shotDir:Int, type:String, target:String = "enemy") {
+	public function new(x:Float, y:Float, shotDir:Int, type:String, target:String = "enemy", ?shotVelX:Null<Float>, ?shotVelY:Null<Float>) {
 		super(0, 0);
 
 		projectileType = type;
 		targetType = target.toLowerCase();
 		dir = shotDir;
+		this.shotVelX = shotVelX==null ? shotDir : shotVelX;
+		this.shotVelY = shotVelY==null ? 0 : shotVelY;
 		setPosPixel(x, y);
 		vBase.setFricts(0.82, 1);
 
@@ -44,6 +48,20 @@ class Projectile extends Entity {
 		if( xr < 0.2 && level.hasCollision(cx - 1, cy) ) {
 			xr = 0.2;
 			strategy.onXCollision(this, -1);
+		}
+	}
+
+	override function onPreStepY() {
+		super.onPreStepY();
+
+		if( yr > 0.8 && level.hasCollision(cx, cy + 1) ) {
+			yr = 0.8;
+			strategy.onYCollision(this, 1);
+		}
+
+		if( yr < 0.2 && level.hasCollision(cx, cy - 1) ) {
+			yr = 0.2;
+			strategy.onYCollision(this, -1);
 		}
 	}
 
