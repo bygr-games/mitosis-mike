@@ -22,12 +22,12 @@ class SamplePlayer extends Entity {
 	static inline var CAMERA_VISIBLE_PADDING = 12.0;
 	static inline var CAMERA_DEFAULT_ZOOM = 1;
 	static var SIZE_LEVELS = [
-		{ wid:16, hei:32 },
-		{ wid:12, hei:24 },
-		{ wid:8, hei:16 },
-		{ wid:6, hei:12 },
-		{ wid:4, hei:8 },
-		{ wid:3, hei:6 },
+		{ wid:16, hei:32, per: 100 },
+		{ wid:12, hei:24, per: 100 / 2 },
+		{ wid:8, hei:16, per: 100 / 4 },
+		{ wid:6, hei:12, per: 100 / 8 },
+		{ wid:4, hei:8, per: 100 / 16 },
+		{ wid:3, hei:6, per: 100 / 32 },
 	];
 
 	var ca : ControllerAccess<GameAction>;
@@ -339,6 +339,10 @@ class SamplePlayer extends Entity {
 		return SIZE_LEVELS[sizeLevel];
 	}
 
+	inline function getCompletionPercentage() {
+		return getSizeData().per;
+	}
+
 	inline function hasNextSizeLevel() {
 		return sizeLevel < SIZE_LEVELS.length-1;
 	}
@@ -597,8 +601,12 @@ class SamplePlayer extends Entity {
 		// Start next level when touching a PlayerExit entity
 		for( exit in level.data.l_Entities.all_PlayerExit )
 			if( distCase(null, exit.cx, exit.cy) < 1 ) {
-				if( !cd.hasSetS("levelExit", 0.2) )
-					app.delayer.nextFrame( ()->game.startNextLevelWrap() );
+				if( !cd.hasSetS("levelExit", 0.2) ) {
+					var shouldStartNextLevel = level.registerCompletedPercentage(getCompletionPercentage());
+					destroy();
+					if( shouldStartNextLevel )
+						app.delayer.nextFrame( ()->game.startNextLevelWrap() );
+				}
 				return;
 			}
 

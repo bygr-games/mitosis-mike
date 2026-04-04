@@ -10,8 +10,11 @@ class Level extends GameChildProcess {
 	public var pxHei(default,null) : Int;
 
 	public var data : World_Level;
+	public var totalCompletedPercentage(default,null) = 0.0;
+	public var requiredPercentage(default,null) = 100.0;
 	var tilesetSource : h2d.Tile;
 	var overlayRoot : h2d.Object;
+	var nextLevelQueued = false;
 
 	public var marks : dn.MarkerMap<LevelMark>;
 	var invalidated = true;
@@ -25,6 +28,7 @@ class Level extends GameChildProcess {
 		cHei = data.l_Collisions.cHei;
 		pxWid = cWid * Const.GRID;
 		pxHei = cHei * Const.GRID;
+		requiredPercentage = readRequiredPercentage();
 		tilesetSource = hxd.Res.levels.mitosisWorldTiles.toAseprite().toTile();
 		overlayRoot = new h2d.Object();
 		Game.ME.scroller.add(overlayRoot, Const.DP_FRONT);
@@ -64,6 +68,31 @@ class Level extends GameChildProcess {
 	/** Return TRUE if "Collisions" layer contains a collision value **/
 	public inline function hasCollision(cx,cy) : Bool {
 		return !isValid(cx,cy) ? true : marks.has(M_Coll_Wall, cx,cy);
+	}
+
+	public inline function hasReachedRequiredPercentage() {
+		return totalCompletedPercentage >= requiredPercentage;
+	}
+
+	public function registerCompletedPercentage(value:Float) {
+		totalCompletedPercentage += value;
+		game.hud.invalidate();
+
+		if( !nextLevelQueued && hasReachedRequiredPercentage() ) {
+			nextLevelQueued = true;
+			return true;
+		}
+
+		return false;
+	}
+
+	function readRequiredPercentage() {
+		var rawValue:Dynamic = Reflect.field(data, "f_RequiredPercentage");
+		if( rawValue==null )
+			return 100.0;
+
+		var value = Std.parseFloat(Std.string(rawValue));
+		return Math.isNaN(value) ? 100.0 : value;
 	}
 
 	function addInvisibleWallCollisions() {
