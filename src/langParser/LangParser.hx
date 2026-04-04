@@ -8,7 +8,7 @@ class LangParser {
 		GetText.parseSourceCode(allEntries, "src");
 
 		// Extract from LDtk
-		GetText.parseLdtk(allEntries, "res/levels/sampleWorld.ldtk", {
+		GetText.parseLdtk(allEntries, "res/levels/mitosisWorld.ldtk", {
 			entityFields: [], // fill this with Entity fields that should be extracted for localization
 			levelFieldIds: [], // fill this with Level fields that should be extracted for localization
 		});

@@ -180,7 +180,7 @@ class SamplePlayer extends Entity {
 			return;
 
 		levelStartByUid = new Map();
-		var raw:Dynamic = haxe.Json.parse(hxd.Res.levels.sampleWorld.entry.getText());
+		var raw:Dynamic = haxe.Json.parse(hxd.Res.levels.mitosisWorld.entry.getText());
 		var worlds:Array<Dynamic> = cast Reflect.field(raw, "worlds");
 		if( worlds==null )
 			return;

@@ -24,7 +24,7 @@ class Level extends GameChildProcess {
 		cHei = data.l_Collisions.cHei;
 		pxWid = cWid * Const.GRID;
 		pxHei = cHei * Const.GRID;
-		tilesetSource = hxd.Res.levels.sampleWorldTiles.toAseprite().toTile();
+		tilesetSource = hxd.Res.levels.mitosisWorldTiles.toAseprite().toTile();
 
 		marks = new dn.MarkerMap(cWid, cHei);
 		for(cy in 0...cHei)

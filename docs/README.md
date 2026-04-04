@@ -9,6 +9,7 @@ The central idea is simple: Mike cannot be permanently stopped. When he is harme
 - [Story](story.md) for the premise, tone, and narrative setup.
 - [Mechanics](mechanics.md) for the core player rules and feature status.
 - [Level Flow](level-flow.md) for the intended structure of stages, hazards, enemies, and exits.
+- [Chapters](chapters.md) for the campaign structure, themes, and progression beats.
 
 ## High-Level Pitch
 
