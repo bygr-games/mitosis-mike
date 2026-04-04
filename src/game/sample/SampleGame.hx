@@ -10,6 +10,11 @@ class SampleGame extends Game {
 
 	override function startLevel(l:World_Level) {
 		super.startLevel(l);
+
+		if( level.data.l_Entities.all_PlayerExit != null ) {
+			for( exitSpawn in level.data.l_Entities.all_PlayerExit )
+				new SamplePlayerExit(exitSpawn.cx, exitSpawn.cy);
+		}
 		
 		// Spawn player
 		new SamplePlayer();

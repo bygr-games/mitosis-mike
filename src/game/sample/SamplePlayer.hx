@@ -599,8 +599,12 @@ class SamplePlayer extends Entity {
 			vBase.addX( walkSpeed*0.045 ); // some arbitrary speed
 
 		// Start next level when touching a PlayerExit entity
-		for( exit in level.data.l_Entities.all_PlayerExit )
-			if( distCase(null, exit.cx, exit.cy) < 1 ) {
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayerExit) ) {
+				var exit = e.as(SamplePlayerExit);
+				if( !Lib.rectangleOverlaps(left, top, wid, hei, exit.left, exit.top, exit.wid, exit.hei) )
+					continue;
+
 				if( !cd.hasSetS("levelExit", 0.2) ) {
 					var shouldStartNextLevel = level.registerCompletedPercentage(getCompletionPercentage());
 					destroy();
