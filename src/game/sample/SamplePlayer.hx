@@ -181,11 +181,11 @@ class SamplePlayer extends Entity {
 		var probeCx = pxToLevelCoord(right);
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		var best:Null<Float> = null;
 		for( probeCy in topCy...bottomCy+1 )
 			if( level.hasCollision(probeCx, probeCy) )
-				return probeCx * Const.GRID;
+				best = probeCx * Const.GRID;
 
-		var best:Null<Float> = null;
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SamplePlayer) ) {
 				var other = e.as(SamplePlayer);
@@ -216,11 +216,11 @@ class SamplePlayer extends Entity {
 		var probeCx = pxToLevelCoord(left - COLLISION_EPSILON);
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		var best:Null<Float> = null;
 		for( probeCy in topCy...bottomCy+1 )
 			if( level.hasCollision(probeCx, probeCy) )
-				return (probeCx + 1) * Const.GRID;
+				best = (probeCx + 1) * Const.GRID;
 
-		var best:Null<Float> = null;
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SamplePlayer) ) {
 				var other = e.as(SamplePlayer);
@@ -251,11 +251,11 @@ class SamplePlayer extends Entity {
 		var probeCy = pxToLevelCoord(bottom);
 		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
 		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
+		var best:Null<Float> = null;
 		for( probeCx in leftCx...rightCx+1 )
 			if( level.hasCollision(probeCx, probeCy) )
-				return probeCy * Const.GRID;
+				best = probeCy * Const.GRID;
 
-		var best:Null<Float> = null;
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SamplePlayer) ) {
 				var other = e.as(SamplePlayer);
@@ -286,11 +286,11 @@ class SamplePlayer extends Entity {
 		var probeCy = pxToLevelCoord(top - COLLISION_EPSILON);
 		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
 		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
+		var best:Null<Float> = null;
 		for( probeCx in leftCx...rightCx+1 )
 			if( level.hasCollision(probeCx, probeCy) )
-				return (probeCy + 1) * Const.GRID;
+				best = (probeCy + 1) * Const.GRID;
 
-		var best:Null<Float> = null;
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SamplePlayer) ) {
 				var other = e.as(SamplePlayer);
@@ -710,6 +710,44 @@ class SamplePlayer extends Entity {
 		}
 	}
 
+	function resolvePlayerPush(other:SamplePlayer) {
+		var overlapLeft = right - other.left;
+		var overlapRight = other.right - left;
+		var overlapUp = bottom - other.top;
+		var overlapDown = other.bottom - top;
+		var pushX = centerX < other.centerX ? -overlapLeft : overlapRight;
+		var pushY = centerY < other.centerY ? -overlapUp : overlapDown;
+
+		function tryResolve(targetAttachX:Float, targetAttachY:Float) {
+			if( !isPlacementFreeAt(targetAttachX, targetAttachY) )
+				return false;
+
+			setPosPixel(targetAttachX, targetAttachY);
+			return true;
+		}
+
+		if( M.fabs(pushX) <= M.fabs(pushY) ) {
+			if( !tryResolve(attachX + pushX, attachY) ) {
+				if( !tryResolve(attachX, attachY + pushY) ) {
+					placeAtNearestSafeSplitPosition(attachX, attachY, pushX<0 ? -1 : 1);
+					return;
+				}
+			}
+			vBase.clearX();
+			vBump.clearX();
+		}
+		else {
+			if( !tryResolve(attachX, attachY + pushY) ) {
+				if( !tryResolve(attachX + pushX, attachY) ) {
+					placeAtNearestSafeSplitPosition(attachX, attachY, pushX<0 ? -1 : 1);
+					return;
+				}
+			}
+			vBase.clearY();
+			vBump.clearY();
+		}
+	}
+
 
 	/** X collisions **/
 	override function onPreStepX() {
@@ -789,6 +827,19 @@ class SamplePlayer extends Entity {
 		// Apply requested walk movement
 		if( walkSpeed!=0 )
 			vBase.addX( walkSpeed*0.045 ); // some arbitrary speed
+
+		// Player body contact
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) ) {
+				var other = e.as(SamplePlayer);
+				if( !isSolidPlayer(other) )
+					continue;
+
+				if( !Lib.rectangleOverlaps(left, top, wid, hei, other.left, other.top, other.wid, other.hei) )
+					continue;
+
+				resolvePlayerPush(other);
+			}
 
 		// Start next level when touching a PlayerExit entity
 		for( e in Entity.ALL )
