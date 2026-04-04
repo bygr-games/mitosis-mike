@@ -44,12 +44,40 @@ class SampleEnemy extends Entity {
 		return null;
 	}
 
+	function getSolidColumnOnRightInBounds() : Null<Float> {
+		var probeCx = pxToLevelCoord(right);
+		if( probeCx<0 || probeCx>=level.cWid )
+			return null;
+
+		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		for( probeCy in topCy...bottomCy+1 )
+			if( level.isValid(probeCx, probeCy) && level.hasCollision(probeCx, probeCy) )
+				return probeCx * Const.GRID;
+
+		return null;
+	}
+
 	function getSolidColumnOnLeft() : Null<Float> {
 		var probeCx = pxToLevelCoord(left - COLLISION_EPSILON);
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		for( probeCy in topCy...bottomCy+1 )
 			if( level.hasCollision(probeCx, probeCy) )
+				return (probeCx + 1) * Const.GRID;
+
+		return null;
+	}
+
+	function getSolidColumnOnLeftInBounds() : Null<Float> {
+		var probeCx = pxToLevelCoord(left - COLLISION_EPSILON);
+		if( probeCx<0 || probeCx>=level.cWid )
+			return null;
+
+		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		for( probeCy in topCy...bottomCy+1 )
+			if( level.isValid(probeCx, probeCy) && level.hasCollision(probeCx, probeCy) )
 				return (probeCx + 1) * Const.GRID;
 
 		return null;
@@ -85,11 +113,24 @@ class SampleEnemy extends Entity {
 		return dir>0 ? getSolidColumnOnRight()!=null : getSolidColumnOnLeft()!=null;
 	}
 
+	public inline function hasWallInDirectionIgnoringLevelBounds(dir:Int) {
+		return dir>0 ? getSolidColumnOnRightInBounds()!=null : getSolidColumnOnLeftInBounds()!=null;
+	}
+
 	public inline function hasGroundAhead(dir:Int) {
 		var probeX = dir>0 ? right + COLLISION_EPSILON : left - COLLISION_EPSILON;
 		var probeCx = pxToLevelCoord(probeX);
 		var probeCy = pxToLevelCoord(bottom + COLLISION_EPSILON);
 		return level.hasCollision(probeCx, probeCy);
+	}
+
+	public inline function willExitLevelHorizontally(dir:Int, moveAmount:Float) {
+		var offset = M.fabs(moveAmount);
+		return dir>0 ? right + offset > level.pxWid : left - offset < 0;
+	}
+
+	public inline function hasLeftLevelHorizontally() {
+		return right<=0 || left>=level.pxWid;
 	}
 
 	/**
@@ -241,14 +282,22 @@ class SampleEnemy extends Entity {
 		super.onPreStepX();
 
 		// Right collision
-		var rightCollisionX = dxTotal>0 ? getSolidColumnOnRight() : null;
+		var rightCollisionX = dxTotal>0
+			? enemyType=="scared"
+				? getSolidColumnOnRightInBounds()
+				: getSolidColumnOnRight()
+			: null;
 		if( rightCollisionX!=null ) {
 			xr = rightCollisionX / Const.GRID - ( (1-pivotX) * wid ) / Const.GRID - cx;
 			strategy.onXCollision(this, 1);
 		}
 
 		// Left collision
-		var leftCollisionX = dxTotal<0 ? getSolidColumnOnLeft() : null;
+		var leftCollisionX = dxTotal<0
+			? enemyType=="scared"
+				? getSolidColumnOnLeftInBounds()
+				: getSolidColumnOnLeft()
+			: null;
 		if( leftCollisionX!=null ) {
 			xr = leftCollisionX / Const.GRID + ( pivotX * wid ) / Const.GRID - cx;
 			strategy.onXCollision(this, -1);
@@ -291,10 +340,24 @@ class SampleEnemy extends Entity {
 		FixedUpdate is called at constant 30 FPS. All physics calculations happen here.
 	**/
 	override function fixedUpdate() {
+		if( destroyed )
+			return;
+
 		super.fixedUpdate();
+
+		if( destroyed )
+			return;
+
+		if( enemyType=="scared" && hasLeftLevelHorizontally() ) {
+			destroy();
+			return;
+		}
 
 		// Apply strategy behavior
 		strategy.update(this);
+		if( destroyed )
+			return;
+
 		updateAnimState();
 	}
 }

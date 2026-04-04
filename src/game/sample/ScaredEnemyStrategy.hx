@@ -24,7 +24,8 @@ class ScaredEnemyStrategy implements EnemyStrategy {
 		var fleeDir = player.centerX >= enemy.centerX ? -1 : 1;
 		enemy.dir = fleeDir;
 
-		if( isOnGround(enemy) && !enemy.hasWallInDirection(fleeDir) && enemy.hasGroundAhead(fleeDir) )
+		var canLeaveLevel = enemy.willExitLevelHorizontally(fleeDir, runSpeed);
+		if( isOnGround(enemy) && !enemy.hasWallInDirectionIgnoringLevelBounds(fleeDir) && ( enemy.hasGroundAhead(fleeDir) || canLeaveLevel ) )
 			enemy.vBase.addX(fleeDir * runSpeed);
 	}
 
