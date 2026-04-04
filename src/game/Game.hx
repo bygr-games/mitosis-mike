@@ -41,7 +41,7 @@ class Game extends AppChildProcess {
 		hud = new ui.Hud();
 		camera = new Camera();
 
-		startLevel(Assets.worldData.all_worlds.MitosisWorld.all_levels.FirstLevel);
+		startLevel(Assets.worldData.all_worlds.MitosisWorld.all_levels.Level_0);
 	}
 
 

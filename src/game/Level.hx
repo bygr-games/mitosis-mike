@@ -60,11 +60,13 @@ class Level extends GameChildProcess {
 
 	/** Render current level**/
 	function render() {
-		// Placeholder level render
 		root.removeChildren();
 
-		var tg = new h2d.TileGroup(tilesetSource, root);
-		data.l_Collisions.render(tg);
+		var collisionTiles = new h2d.TileGroup(tilesetSource, root);
+		data.l_Collisions.render(collisionTiles);
+
+		var decorationTiles = new h2d.TileGroup(tilesetSource, root);
+		data.l_DecorationTiles.render(decorationTiles);
 	}
 
 	override function postUpdate() {
