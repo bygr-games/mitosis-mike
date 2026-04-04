@@ -11,6 +11,7 @@ class Level extends GameChildProcess {
 
 	public var data : World_Level;
 	var tilesetSource : h2d.Tile;
+	var overlayRoot : h2d.Object;
 
 	public var marks : dn.MarkerMap<LevelMark>;
 	var invalidated = true;
@@ -25,6 +26,8 @@ class Level extends GameChildProcess {
 		pxWid = cWid * Const.GRID;
 		pxHei = cHei * Const.GRID;
 		tilesetSource = hxd.Res.levels.mitosisWorldTiles.toAseprite().toTile();
+		overlayRoot = new h2d.Object();
+		Game.ME.scroller.add(overlayRoot, Const.DP_FRONT);
 
 		marks = new dn.MarkerMap(cWid, cHei);
 		for(cy in 0...cHei)
@@ -40,6 +43,9 @@ class Level extends GameChildProcess {
 		super.onDispose();
 		data = null;
 		tilesetSource = null;
+		overlayRoot.removeChildren();
+		overlayRoot.remove();
+		overlayRoot = null;
 		marks.dispose();
 		marks = null;
 	}
@@ -104,12 +110,16 @@ class Level extends GameChildProcess {
 	/** Render current level**/
 	function render() {
 		root.removeChildren();
+		overlayRoot.removeChildren();
 
 		var collisionTiles = new h2d.TileGroup(tilesetSource, root);
 		data.l_Collisions.render(collisionTiles);
 
 		var decorationTiles = new h2d.TileGroup(tilesetSource, root);
 		data.l_DecorationTiles.render(decorationTiles);
+
+		var overlayTiles = new h2d.TileGroup(tilesetSource, overlayRoot);
+		data.l_OverlayTiles.render(overlayTiles);
 	}
 
 	override function postUpdate() {
