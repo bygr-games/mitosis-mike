@@ -1,79 +1,53 @@
-# About
+# Mitosis Mike
 
-**A lightweight and simple base structure for games, using _[Heaps](https://heaps.io)_ framework and _[Haxe](https://haxe.org)_ language.**
+Mitosis Mike is a game jam project built with Haxe, Heaps, and HashLink.
 
-Latest release notes: [View changelog](CHANGELOG.md).
+## Installation
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/deepnight/gameBase/test.js.yml)](https://github.com/deepnight/gameBase/actions/workflows/test.js.yml)
-[![GitHub Repo stars](https://img.shields.io/github/stars/deepnight/gameBase?label=%E2%98%85)](https://github.com/deepnight/gameBase)
+1. Install Haxe and HashLink.
+2. From the repository root, install project dependencies:
 
-# Install
+```bash
+haxe setup.hxml
+```
 
-## Legacy or master?
+## Startup
 
-Two separate branches exist for GameBase:
+Build and run from the repository root.
 
-- `master`: latest GameBase version, actively maintained.
-- `legacy`: the previous Gamebase version. This one is much more minimalistic but it could be useful if you were looking for a very basic framework for Heaps+Haxe.
+HashLink build:
 
-The following document will only refer to the `master` branch.
+```bash
+haxe build.opengl.hxml
+hl bin/client.hl
+```
 
-## Getting master
+Alternative builds:
 
-1.  Install **Haxe** and **Hashlink**: [Step-by-step tutorial](https://deepnight.net/tutorial/a-quick-guide-to-installing-haxe/)
-2.  Install required libs by running the following command **in the root of the repo**: `haxe setup.hxml`
+- DirectX: `haxe build.directx.hxml`
+- JavaScript/WebGL: `haxe build.js.hxml`
 
-# Compile
+To run the JavaScript build, open `run_js.html` after compiling.
 
-From the command line, run either:
+## Debugging
 
-- For **DirectX**: `haxe build.directx.hxml`
-- For **OpenGL**: `haxe build.opengl.hxml`
-- For **Javascript/WebGL**: `haxe build.js.hxml`
+For a debug-enabled build from the command line:
 
-The `build.dev.hxml` is just a shortcut to one of the previous ones, with added `-debug` flag.
+```bash
+haxe build.dev.hxml
+hl bin/client.hl
+```
 
-Run the result with either:
+In VS Code, the workspace already includes launch configurations:
 
-- For **DirectX/OpenGL**: `hl bin\client.hl`
-- For **Javascript**: `start run_js.html`
+- `HL debug` launches the HashLink target.
+- `Chrome JS debug` launches `run_js.html` in Chrome.
 
-# Full guide
+Both launch configs use the `HaxeActiveConf` pre-launch task.
 
-An in-depth tutorial is available here: [Using gamebase to create a game](https://deepnight.net/tutorial/using-my-gamebase-to-create-a-heaps-game/). Please note that this tutorial still refers to the `legacy` branch, even though the general idea is the same in `master` branch.
+## Docs
 
-## Sample examples
-
-The samples are the recommended places to start for the latest `GameBase` version (`main`).
-
-They should give a pretty hands-on understanding of how entities work and how to integrate `ldtk` to development.
-
-`SamplePlayer.hx`[SamplePlayer.hx]
-
-SamplePlayer is an Entity with some extra functionalities:
-
-- user controlled (using gamepad or keyboard)
-- falls with gravity
-- has basic level collisions
-- some squash animations, because it's cheap and they do the job
-
-`SampleWorld.hx`
-
-A small class that just creates a SamplePlayer instance in the sample level.
-
-## Localization
-
-For **localization support** (ie. translating your game texts), you may also check the [following guide](https://deepnight.net/tutorial/part-4-localize-texts-using-po-files/).
-
-## Questions
-
-Any question? Join the [Official Deepnight Games discord](https://deepnight.net/go/discord).
-
-# Cleanup for your own usage
-
-You can safely remove the following files/folders from repo root:
-
-- `.github/`
-- `LICENSE`
-- `README.md`
-- `CHANGELOG.md`
+- [Docs overview](docs/README.md)
+- [Story](docs/story.md)
+- [Mechanics](docs/mechanics.md)
+- [Level flow](docs/level-flow.md)
