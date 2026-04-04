@@ -19,10 +19,15 @@ class SampleGame extends Game {
 		// Spawn player
 		new SamplePlayer();
 
-		// Spawn blue enemies
-		if( level.data.l_Entities.all_BlueEnemy != null ) {
-			for( blueSpawn in level.data.l_Entities.all_BlueEnemy ) {
-				new SampleEnemy(blueSpawn.cx, blueSpawn.cy, "blue");
+		// Spawn saw enemies (fall back to the old name to avoid breaking older maps)
+		var sawSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_SawEnemy");
+		if( sawSpawns == null )
+			sawSpawns = cast Reflect.field(level.data.l_Entities, "all_BlueEnemy");
+		if( sawSpawns != null ) {
+			for( sawSpawn in sawSpawns ) {
+				var cx:Int = cast Reflect.field(sawSpawn, "cx");
+				var cy:Int = cast Reflect.field(sawSpawn, "cy");
+				new SampleEnemy(cx, cy, "saw");
 			}
 		}
 
@@ -51,6 +56,15 @@ class SampleGame extends Game {
 				var cx:Int = cast Reflect.field(scaredSpawn, "cx");
 				var cy:Int = cast Reflect.field(scaredSpawn, "cy");
 				new SampleEnemy(cx, cy, "scared");
+			}
+		}
+
+		var spikeSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_SpikeEnemy");
+		if( spikeSpawns != null ) {
+			for( spikeSpawn in spikeSpawns ) {
+				var cx:Int = cast Reflect.field(spikeSpawn, "cx");
+				var cy:Int = cast Reflect.field(spikeSpawn, "cy");
+				new SampleEnemy(cx, cy, "spike");
 			}
 		}
 	}

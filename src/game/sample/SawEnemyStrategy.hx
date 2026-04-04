@@ -1,10 +1,10 @@
 package sample;
 
 /**
-	Blue Enemy Strategy: walks back and forth like a Koopa Troopa from Super Mario Bros.
+	Saw Enemy Strategy: walks back and forth like a Koopa Troopa from Super Mario Bros.
 	Moves in one direction until hitting a collision or cliff, then turns around.
 **/
-class BlueEnemyStrategy implements EnemyStrategy {
+class SawEnemyStrategy implements EnemyStrategy {
 	var walkSpeed = 0.045;
 	var currentDir = 1; // 1 for right, -1 for left
 

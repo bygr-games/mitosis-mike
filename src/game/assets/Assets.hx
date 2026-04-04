@@ -16,9 +16,10 @@ class Assets {
 	public static var player : SpriteLib;
 	/** Enemy atlases **/
 	public static var enemyRed : SpriteLib;
-	public static var enemyBlue : SpriteLib;
+	public static var enemySaw : SpriteLib;
 	public static var enemyShooting : SpriteLib;
 	public static var enemyScared : SpriteLib;
+	public static var enemySpike : SpriteLib;
 	public static var playerExit : SpriteLib;
 
 	/** LDtk world data **/
@@ -39,9 +40,10 @@ class Assets {
 		tiles = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.tiles.toAseprite());
 		player = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.player.toAseprite());
 		enemyRed = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_red.toAseprite());
-		enemyBlue = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_blue.toAseprite());
+		enemySaw = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_saw.toAseprite());
 		enemyShooting = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_shooting.toAseprite());
 		enemyScared = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_scared.toAseprite());
+		enemySpike = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_spike.toAseprite());
 		playerExit = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.playerExit.toAseprite());
 
 		// Hot-reloading of CastleDB
@@ -99,9 +101,10 @@ class Assets {
 		tiles.tmod = tmod;
 		player.tmod = tmod;
 		enemyRed.tmod = tmod;
-		enemyBlue.tmod = tmod;
+		enemySaw.tmod = tmod;
 		enemyShooting.tmod = tmod;
 		enemyScared.tmod = tmod;
+		enemySpike.tmod = tmod;
 		playerExit.tmod = tmod;
 		// <-- add other atlas TMOD updates here
 	}

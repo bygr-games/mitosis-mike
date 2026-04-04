@@ -5,10 +5,11 @@ package sample;
 	behaviors based on its strategy pattern implementation.
 	
 	Supported types:
-	- "blue": walks back and forth, turns on collision/cliff
+	- "saw": walks back and forth, turns on collision/cliff
 	- "red": stays in place and jumps constantly
 	- "shooting": stays in place, shoots toward player every 3 seconds, and does not hurt on contact
 	- "scared": runs away from nearby players and does not hurt them on contact
+	- "spike": stays in place and splits players on contact
 **/
 class SampleEnemy extends Entity {
 	static inline var COLLISION_EPSILON = 0.001;
@@ -139,21 +140,25 @@ class SampleEnemy extends Entity {
 	public function new(cx:Int, cy:Int, type:String) {
 		super(5, 5);
 
-		enemyType = type.toLowerCase();
+		enemyType = switch(type.toLowerCase()) {
+			case "blue": "saw";
+			default: type.toLowerCase();
+		};
 		setPosCase(cx, cy);
 
 		// Initialize physics
 		vBase.setFricts(0.84, 0.94);
 
 		// Create strategy based on type
-		strategy = switch(type.toLowerCase()) {
-			case "blue": new BlueEnemyStrategy();
+		strategy = switch(enemyType) {
+			case "saw": new SawEnemyStrategy();
 			case "red": new RedEnemyStrategy();
 			case "shooting", "green": new ShootingEnemyStrategy();
 			case "scared": new ScaredEnemyStrategy();
+			case "spike": new SpikeEnemyStrategy();
 			default: 
-				trace('Unknown enemy type: $type, defaulting to blue');
-				new BlueEnemyStrategy();
+				trace('Unknown enemy type: $type, defaulting to saw');
+				new SawEnemyStrategy();
 		}
 
 		strategy.initHitbox(this);
@@ -166,10 +171,11 @@ class SampleEnemy extends Entity {
 	function initGraphics() {
 		enemyLib = switch(enemyType) {
 			case "red": Assets.enemyRed;
-			case "blue": Assets.enemyBlue;
+			case "saw": Assets.enemySaw;
 			case "shooting", "green": Assets.enemyShooting;
 			case "scared": Assets.enemyScared;
-			default: Assets.enemyBlue;
+			case "spike": Assets.enemySpike;
+			default: Assets.enemySaw;
 		}
 
 		var baseNames = [
@@ -207,10 +213,11 @@ class SampleEnemy extends Entity {
 			return;
 
 		var col = switch(enemyType) {
-			case "blue": 0x0000FF;
+			case "saw": 0x0000FF;
 			case "red": 0xFF0000;
 			case "shooting", "green": 0x008000;
 			case "scared": 0x7A7AFF;
+			case "spike": 0x666666;
 			default: 0xBBBBBB;
 		}
 
