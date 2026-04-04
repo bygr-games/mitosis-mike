@@ -41,7 +41,7 @@ class Game extends AppChildProcess {
 		hud = new ui.Hud();
 		camera = new Camera();
 
-		startLevel(Assets.worldData.all_worlds.SampleWorld.all_levels.FirstLevel);
+		startLevel(Assets.worldData.all_worlds.MitosisWorld.all_levels.FirstLevel);
 	}
 
 
@@ -74,7 +74,7 @@ class Game extends AppChildProcess {
 	}
 
 	function getOrderedWorldLevels() : Array<World.World_Level> {
-		var allLevels:Dynamic = Assets.worldData.all_worlds.SampleWorld.all_levels;
+		var allLevels:Dynamic = Assets.worldData.all_worlds.MitosisWorld.all_levels;
 		var orderedLevels : Array<World.World_Level> = [];
 
 		for( levelId in Reflect.fields(allLevels) ) {
@@ -120,7 +120,7 @@ class Game extends AppChildProcess {
 	function onLdtkReload() {
 		hud.notify("LDtk reloaded");
 		if( level!=null )
-			startLevel( Assets.worldData.all_worlds.SampleWorld.getLevel(level.data.uid) );
+			startLevel( Assets.worldData.all_worlds.MitosisWorld.getLevel(level.data.uid) );
 	}
 
 	/** Window/app resize event **/

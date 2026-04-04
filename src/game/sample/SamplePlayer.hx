@@ -1,7 +1,5 @@
 package sample;
 
-import sample.Projectile;
-
 /**
 	SamplePlayer is an Entity with some extra functionalities:
 	- user controlled (using gamepad or keyboard)
@@ -43,7 +41,6 @@ class SamplePlayer extends Entity {
 	var animRun : Null<String>;
 	var animJump : Null<String>;
 	var animFall : Null<String>;
-	var animShoot : Null<String>;
 	var currentAnim : Null<String>;
 
 	// This is TRUE if the player is not falling
@@ -411,12 +408,6 @@ class SamplePlayer extends Entity {
 			"samplePlayer_fall",
 			"sample_player_fall"
 		]);
-		animShoot = resolveFirstExisting([
-			"shoot",
-			"player_shoot",
-			"samplePlayer_shoot",
-			"sample_player_shoot"
-		]);
 
 		if( animIdle!=null )
 			applyAnim(animIdle);
@@ -458,9 +449,7 @@ class SamplePlayer extends Entity {
 	function updateAnimState() {
 		var next : Null<String>;
 
-		if( cd.has("shootLock") && animShoot!=null )
-			next = animShoot;
-		else if( !isOnGroundNow() )
+		if( !isOnGroundNow() )
 			next = dyTotal<0 ? (animJump!=null ? animJump : animIdle) : (animFall!=null ? animFall : animIdle);
 		else if( M.fabs(dxTotal)>0.03 )
 			next = animRun!=null ? animRun : animIdle;
@@ -590,12 +579,6 @@ class SamplePlayer extends Entity {
 			// As mentioned above, we don't touch physics values (eg. `dx`) here. We just store some "requested walk speed", which will be applied to actual physics in fixedUpdate.
 			walkSpeed = ca.getAnalogValue2(MoveLeft,MoveRight); // -1 to 1
 			dir = walkSpeed>0 ? 1 : -1;
-		}
-
-		// Shoot
-		if( ca.isPressed(Shoot) && !cd.hasSetS("shootLock", 0.12) ) {
-			new Projectile(centerX + dir*8, centerY-4, dir, "basic");
-			ca.rumble(0.03, 0.03);
 		}
 	}
 
