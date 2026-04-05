@@ -3,6 +3,7 @@ package sample;
 class ShootingEnemyStrategy implements EnemyStrategy {
 	var minShootIntervalS = 1.5;
 	var maxShootIntervalS = 3.0;
+	var maxInitialShootDelayS = 1.5;
 
 	public function new() {}
 
@@ -10,6 +11,7 @@ class ShootingEnemyStrategy implements EnemyStrategy {
 		enemy.iwid = 16;
 		enemy.ihei = 32;
 		enemy.setPivots(0.5, 1);
+		enemy.cd.setS("shootingEnemyShoot", enemy.rnd(0, maxInitialShootDelayS));
 	}
 
 	public function update(enemy:SampleEnemy):Void {
