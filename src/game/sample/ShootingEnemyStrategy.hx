@@ -1,7 +1,8 @@
 package sample;
 
 class ShootingEnemyStrategy implements EnemyStrategy {
-	var shootIntervalS = 3.0;
+	var minShootIntervalS = 1.5;
+	var maxShootIntervalS = 3.0;
 
 	public function new() {}
 
@@ -21,7 +22,8 @@ class ShootingEnemyStrategy implements EnemyStrategy {
 			if( !shootUpward )
 				enemy.dir = closestPlayer.centerX >= enemy.centerX ? 1 : -1;
 
-			if( !enemy.cd.hasSetS("shootingEnemyShoot", shootIntervalS) ) {
+			if( !enemy.cd.has("shootingEnemyShoot") ) {
+				enemy.cd.setS("shootingEnemyShoot", enemy.rnd(minShootIntervalS, maxShootIntervalS));
 				enemy.cd.setS("enemyShootAnim", 0.1);
 				if( shootUpward )
 					new Projectile(enemy.centerX, enemy.top + 4, enemy.dir, "violet", "player", 0, -1);
