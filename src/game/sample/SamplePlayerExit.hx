@@ -14,10 +14,8 @@ class SamplePlayerExit extends Entity {
 	}
 
 	function getRoundedTag() {
-		var relativePercentage = level.requiredPercentage<=0
-			? MAX_TAG_VALUE
-			: level.totalCompletedPercentage / level.requiredPercentage * MAX_TAG_VALUE;
-		var steppedValue = Std.int(Math.floor(relativePercentage / TAG_STEP)) * TAG_STEP;
+		var frameValue = (MAX_TAG_VALUE - level.requiredPercentage) + level.totalCompletedPercentage;
+		var steppedValue = Std.int(Math.floor(frameValue / TAG_STEP)) * TAG_STEP;
 		return M.iclamp(steppedValue, 0, MAX_TAG_VALUE);
 	}
 
