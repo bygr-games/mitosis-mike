@@ -39,7 +39,7 @@ class SampleEnemy extends Entity {
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		for( probeCy in topCy...bottomCy+1 )
-			if( level.hasCollision(probeCx, probeCy) )
+			if( level.hasWallCollision(probeCx, probeCy) )
 				return probeCx * Const.GRID;
 
 		return null;
@@ -53,7 +53,7 @@ class SampleEnemy extends Entity {
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		for( probeCy in topCy...bottomCy+1 )
-			if( level.isValid(probeCx, probeCy) && level.hasCollision(probeCx, probeCy) )
+			if( level.isValid(probeCx, probeCy) && level.hasWallCollision(probeCx, probeCy) )
 				return probeCx * Const.GRID;
 
 		return null;
@@ -64,7 +64,7 @@ class SampleEnemy extends Entity {
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		for( probeCy in topCy...bottomCy+1 )
-			if( level.hasCollision(probeCx, probeCy) )
+			if( level.hasWallCollision(probeCx, probeCy) )
 				return (probeCx + 1) * Const.GRID;
 
 		return null;
@@ -78,7 +78,7 @@ class SampleEnemy extends Entity {
 		var topCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		for( probeCy in topCy...bottomCy+1 )
-			if( level.isValid(probeCx, probeCy) && level.hasCollision(probeCx, probeCy) )
+			if( level.isValid(probeCx, probeCy) && level.hasWallCollision(probeCx, probeCy) )
 				return (probeCx + 1) * Const.GRID;
 
 		return null;
@@ -100,7 +100,7 @@ class SampleEnemy extends Entity {
 		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
 		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
 		for( probeCx in leftCx...rightCx+1 )
-			if( level.hasCollision(probeCx, probeCy) )
+			if( level.hasWallCollision(probeCx, probeCy) )
 				return (probeCy + 1) * Const.GRID;
 
 		return null;

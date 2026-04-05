@@ -15,6 +15,8 @@ class Level extends GameChildProcess {
 	var tilesetSource : h2d.Tile;
 	var overlayRoot : h2d.Object;
 	var nextLevelQueued = false;
+	static inline var COLLISION_INTGRID_WALL = 1;
+	static inline var COLLISION_INTGRID_PLATFORM = 2;
 
 	public var marks : dn.MarkerMap<LevelMark>;
 	var invalidated = true;
@@ -36,8 +38,11 @@ class Level extends GameChildProcess {
 		marks = new dn.MarkerMap(cWid, cHei);
 		for(cy in 0...cHei)
 		for(cx in 0...cWid) {
-			if( data.l_Collisions.getInt(cx,cy)==1 )
+			var collisionValue = data.l_Collisions.getInt(cx,cy);
+			if( collisionValue==COLLISION_INTGRID_WALL )
 				marks.set(M_Coll_Wall, cx,cy);
+			else if( collisionValue==COLLISION_INTGRID_PLATFORM )
+				marks.set(M_Coll_Platform, cx,cy);
 		}
 
 		addInvisibleWallCollisions();
@@ -67,7 +72,15 @@ class Level extends GameChildProcess {
 
 	/** Return TRUE if "Collisions" layer contains a collision value **/
 	public inline function hasCollision(cx,cy) : Bool {
+		return !isValid(cx,cy) ? true : hasWallCollision(cx,cy) || hasPlatformCollision(cx,cy);
+	}
+
+	public inline function hasWallCollision(cx,cy) : Bool {
 		return !isValid(cx,cy) ? true : marks.has(M_Coll_Wall, cx,cy);
+	}
+
+	public inline function hasPlatformCollision(cx,cy) : Bool {
+		return isValid(cx,cy) && marks.has(M_Coll_Platform, cx,cy);
 	}
 
 	public inline function hasReachedRequiredPercentage() {

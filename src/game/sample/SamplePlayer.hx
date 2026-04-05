@@ -183,7 +183,7 @@ class SamplePlayer extends Entity {
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		var best:Null<Float> = null;
 		for( probeCy in topCy...bottomCy+1 )
-			if( level.hasCollision(probeCx, probeCy) )
+			if( level.hasWallCollision(probeCx, probeCy) )
 				best = probeCx * Const.GRID;
 
 		for( e in Entity.ALL )
@@ -218,7 +218,7 @@ class SamplePlayer extends Entity {
 		var bottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		var best:Null<Float> = null;
 		for( probeCy in topCy...bottomCy+1 )
-			if( level.hasCollision(probeCx, probeCy) )
+			if( level.hasWallCollision(probeCx, probeCy) )
 				best = (probeCx + 1) * Const.GRID;
 
 		for( e in Entity.ALL )
@@ -288,7 +288,7 @@ class SamplePlayer extends Entity {
 		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
 		var best:Null<Float> = null;
 		for( probeCx in leftCx...rightCx+1 )
-			if( level.hasCollision(probeCx, probeCy) )
+			if( level.hasWallCollision(probeCx, probeCy) )
 				best = (probeCy + 1) * Const.GRID;
 
 		for( e in Entity.ALL )

@@ -38,6 +38,7 @@ enum abstract Affect(Int) {
 
 enum abstract LevelMark(Int) to Int {
 	var M_Coll_Wall; // 0
+	var M_Coll_Platform;
 }
 
 enum abstract LevelSubMark(Int) to Int {
