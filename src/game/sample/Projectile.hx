@@ -40,12 +40,12 @@ class Projectile extends Entity {
 	override function onPreStepX() {
 		super.onPreStepX();
 
-		if( xr > 0.8 && level.hasCollision(cx + 1, cy) ) {
+		if( xr > 0.8 && hasLevelCollision(cx + 1, cy) ) {
 			xr = 0.8;
 			strategy.onXCollision(this, 1);
 		}
 
-		if( xr < 0.2 && level.hasCollision(cx - 1, cy) ) {
+		if( xr < 0.2 && hasLevelCollision(cx - 1, cy) ) {
 			xr = 0.2;
 			strategy.onXCollision(this, -1);
 		}
@@ -54,12 +54,12 @@ class Projectile extends Entity {
 	override function onPreStepY() {
 		super.onPreStepY();
 
-		if( yr > 0.8 && level.hasCollision(cx, cy + 1) ) {
+		if( yr > 0.8 && hasLevelCollision(cx, cy + 1) ) {
 			yr = 0.8;
 			strategy.onYCollision(this, 1);
 		}
 
-		if( yr < 0.2 && level.hasCollision(cx, cy - 1) ) {
+		if( yr < 0.2 && hasLevelCollision(cx, cy - 1) ) {
 			yr = 0.2;
 			strategy.onYCollision(this, -1);
 		}
@@ -74,6 +74,11 @@ class Projectile extends Entity {
 
 		if( destroyed )
 			return;
+
+		if( hasLeftLevel() ) {
+			destroy();
+			return;
+		}
 
 		switch( targetType ) {
 			case "player":
@@ -102,5 +107,16 @@ class Projectile extends Entity {
 					}
 				}
 		}
+	}
+
+	inline function hasLevelCollision(testCx:Int, testCy:Int):Bool {
+		if( !level.isValid(testCx, testCy) )
+			return strategy.collidesWithLevelBounds();
+
+		return level.hasCollision(testCx, testCy);
+	}
+
+	inline function hasLeftLevel():Bool {
+		return right < 0 || left > level.pxWid || bottom < 0 || top > level.pxHei;
 	}
 }

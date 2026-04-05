@@ -25,12 +25,12 @@ class SamplePlayer extends Entity {
 	static inline var CAMERA_VISIBLE_PADDING = 12.0;
 	static inline var CAMERA_DEFAULT_ZOOM = 1;
 	static var SIZE_LEVELS = [
-		{ wid:16, hei:32, per: 100 },
-		{ wid:12, hei:24, per: 100 / 2 },
-		{ wid:8, hei:16, per: 100 / 4 },
-		{ wid:6, hei:12, per: 100 / 8 },
-		{ wid:4, hei:8, per: 100 / 16 },
-		{ wid:3, hei:6, per: 100 / 32 },
+		{ wid:16, hei:32, per: 100, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
+		{ wid:12, hei:24, per: 100 / 2, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
+		{ wid:8, hei:16, per: 100 / 4, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
+		{ wid:6, hei:12, per: 100 / 8, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
+		{ wid:4, hei:8, per: 100 / 16, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
+		{ wid:3, hei:6, per: 100 / 32, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
 	];
 
 	var ca : ControllerAccess<GameAction>;
@@ -513,8 +513,6 @@ class SamplePlayer extends Entity {
 		}
 
 		// Misc inits
-		vBase.setFricts(0.84, 0.94);
-
 		camera.trackPoint(resolveSurvivorsMidpoint, trackCamera);
 		camera.clampToLevelBounds = true;
 
@@ -534,6 +532,22 @@ class SamplePlayer extends Entity {
 
 	inline function getCompletionPercentage() {
 		return getSizeData().per;
+	}
+
+	inline function getHorizontalAcceleration() {
+		return getSizeData().hAcc;
+	}
+
+	inline function getHorizontalFriction() {
+		return getSizeData().hFric;
+	}
+
+	inline function getVerticalAcceleration() {
+		return getSizeData().vAcc;
+	}
+
+	inline function getVerticalFriction() {
+		return getSizeData().vFric;
 	}
 
 	inline function hasNextSizeLevel() {
@@ -565,6 +579,7 @@ class SamplePlayer extends Entity {
 		ihei = size.hei;
 		sprScaleX = wid / BASE_WIDTH;
 		sprScaleY = hei / BASE_HEIGHT;
+		vBase.setFricts(getHorizontalFriction(), getVerticalFriction());
 	}
 
 	override public function hit(dmg:Int, from:Null<Entity>) {
@@ -852,11 +867,11 @@ class SamplePlayer extends Entity {
 
 		// Gravity
 		if( !onGround )
-			vBase.addY(0.05);
+			vBase.addY(getVerticalAcceleration());
 
 		// Apply requested walk movement
 		if( walkSpeed!=0 )
-			vBase.addX( walkSpeed*0.045 ); // some arbitrary speed
+			vBase.addX( walkSpeed*getHorizontalAcceleration() );
 
 		// Player body contact
 		for( e in Entity.ALL )

@@ -38,6 +38,10 @@ class BasicProjectileStrategy implements ProjectileStrategy {
 		}
 	}
 
+	public function collidesWithLevelBounds():Bool {
+		return true;
+	}
+
 	public function onXCollision(projectile:Projectile, dir:Int):Void {
 		emitImpact(projectile.centerX, projectile.centerY, 0xFFD55A);
 		projectile.destroy();

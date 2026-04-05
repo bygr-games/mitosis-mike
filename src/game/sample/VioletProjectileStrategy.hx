@@ -2,7 +2,6 @@ package sample;
 
 class VioletProjectileStrategy implements ProjectileStrategy {
 	var speed = 0.16;
-	var lifetimeS = 2.0;
 
 	public function new() {}
 
@@ -12,19 +11,12 @@ class VioletProjectileStrategy implements ProjectileStrategy {
 		projectile.setPivots(0.5, 0.5);
 
 		projectile.vBase.setFricts(0.82, 1);
-		projectile.cd.setS("projectileLife", lifetimeS);
 
 		var b = new h2d.Bitmap(h2d.Tile.fromColor(0x8F00FF, projectile.iwid, projectile.ihei), projectile.spr);
 		b.tile.setCenterRatio(0.5, 0.5);
 	}
 
 	public function update(projectile:Projectile):Void {
-		if( !projectile.cd.has("projectileLife") ) {
-			emitImpact(projectile.centerX, projectile.centerY, 0x8F00FF);
-			projectile.destroy();
-			return;
-		}
-
 		projectile.vBase.addX(projectile.shotVelX * speed);
 		projectile.vBase.addY(projectile.shotVelY * speed);
 
@@ -36,6 +28,10 @@ class VioletProjectileStrategy implements ProjectileStrategy {
 			p.lifeS = 0.15;
 			p.colorize(0x8F00FF);
 		}
+	}
+
+	public function collidesWithLevelBounds():Bool {
+		return false;
 	}
 
 	public function onXCollision(projectile:Projectile, dir:Int):Void {
