@@ -41,7 +41,11 @@ class Game extends AppChildProcess {
 		hud = new ui.Hud();
 		camera = new Camera();
 
-		startLevel(Assets.worldData.all_worlds.MitosisWorld.all_levels.Level_0);
+		var orderedLevels = getOrderedWorldLevels();
+		if( orderedLevels.length>0 )
+			startLevel(orderedLevels[0]);
+		else
+			startLevel(Assets.worldData.all_worlds.MitosisWorld.all_levels.Level_0);
 	}
 
 
@@ -74,15 +78,33 @@ class Game extends AppChildProcess {
 	}
 
 	function getOrderedWorldLevels() : Array<World.World_Level> {
-		var allLevels:Dynamic = Assets.worldData.all_worlds.MitosisWorld.all_levels;
 		var orderedLevels : Array<World.World_Level> = [];
+		var raw:Dynamic = haxe.Json.parse(hxd.Res.levels.mitosisWorld.entry.getText());
+		var worlds:Array<Dynamic> = cast Reflect.field(raw, "worlds");
 
+		if( worlds!=null && worlds.length>0 ) {
+			var levels:Array<Dynamic> = cast Reflect.field(worlds[0], "levels");
+			if( levels!=null ) {
+				for( levelData in levels ) {
+					var uid:Null<Int> = cast Reflect.field(levelData, "uid");
+					if( uid!=null ) {
+						var l = Assets.worldData.all_worlds.MitosisWorld.getLevel(uid);
+						if( l!=null )
+							orderedLevels.push(l);
+					}
+				}
+			}
+		}
+
+		if( orderedLevels.length>0 )
+			return orderedLevels;
+
+		var allLevels:Dynamic = Assets.worldData.all_worlds.MitosisWorld.all_levels;
 		for( levelId in Reflect.fields(allLevels) ) {
 			var l:World.World_Level = cast Reflect.field(allLevels, levelId);
 			if( l!=null )
 				orderedLevels.push(l);
 		}
-
 		orderedLevels.sort( (a,b)->a.uid-b.uid );
 		return orderedLevels;
 	}
