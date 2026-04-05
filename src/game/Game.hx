@@ -106,6 +106,13 @@ class Game extends AppChildProcess {
 		startLevel(orderedLevels[nextIdx]);
 	}
 
+	public function restartCurrentLevel() {
+		if( level==null )
+			return;
+
+		startLevel(Assets.worldData.all_worlds.MitosisWorld.getLevel(level.data.uid));
+	}
+
 
 
 	/** Called when either CastleDB or `const.json` changes on disk **/
@@ -260,9 +267,9 @@ class Game extends AppChildProcess {
 				new DebugDrone(); // <-- HERE: provide an Entity as argument to attach Drone near it
 			#end
 
-			// Restart whole game
+			// Restart current level
 			if( ca.isPressed(Restart) )
-				App.ME.startGame();
+				restartCurrentLevel();
 
 		}
 	}
