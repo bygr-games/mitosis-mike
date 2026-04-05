@@ -88,7 +88,7 @@ class SamplePlayer extends Entity {
 	}
 
 	function updateIgnoredPlatformRow() {
-		if( ignoredPlatformRow!=null && top > ignoredPlatformRow * Const.GRID + COLLISION_EPSILON )
+		if( ignoredPlatformRow!=null && bottom > (ignoredPlatformRow + 1) * Const.GRID + COLLISION_EPSILON )
 			ignoredPlatformRow = null;
 	}
 
