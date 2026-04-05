@@ -36,6 +36,7 @@ class SamplePlayer extends Entity {
 	var ca : ControllerAccess<GameAction>;
 	var immunityShader : NegativeColorShader;
 	var walkSpeed = 0.;
+	var ignoredPlatformRow : Null<Int>;
 	static var levelStartByUid : Map<Int,{ cx:Int, cy:Int }>;
 	var fallbackBitmap : Null<h2d.Bitmap>;
 	var sizeLevel(default,null) : Int;
@@ -84,6 +85,23 @@ class SamplePlayer extends Entity {
 
 	inline function overlapsEnemyY(other:SampleEnemy) {
 		return bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
+	}
+
+	function updateIgnoredPlatformRow() {
+		if( ignoredPlatformRow!=null && top > ignoredPlatformRow * Const.GRID + COLLISION_EPSILON )
+			ignoredPlatformRow = null;
+	}
+
+	function getGroundPlatformRow() : Null<Int> {
+		var probeCy = pxToLevelCoord(bottom);
+		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
+
+		for( probeCx in leftCx...rightCx+1 )
+			if( level.hasPlatformCollision(probeCx, probeCy) )
+				return probeCy;
+
+		return null;
 	}
 
 	function isPlacementFreeAt(targetAttachX:Float, targetAttachY:Float) {
@@ -248,12 +266,14 @@ class SamplePlayer extends Entity {
 	}
 
 	function getGroundCollisionRow() : Null<Float> {
+		updateIgnoredPlatformRow();
 		var probeCy = pxToLevelCoord(bottom);
 		var leftCx = pxToLevelCoord(left + COLLISION_EPSILON);
 		var rightCx = pxToLevelCoord(right - COLLISION_EPSILON);
 		var best:Null<Float> = null;
+		var ignorePlatformRow = ignoredPlatformRow!=null && ignoredPlatformRow==probeCy;
 		for( probeCx in leftCx...rightCx+1 )
-			if( level.hasCollision(probeCx, probeCy) )
+			if( level.hasWallCollision(probeCx, probeCy) || level.hasPlatformCollision(probeCx, probeCy) && !ignorePlatformRow )
 				best = probeCy * Const.GRID;
 
 		for( e in Entity.ALL )
@@ -797,6 +817,16 @@ class SamplePlayer extends Entity {
 		walkSpeed = 0;
 		if( onGround )
 			cd.setS("recentlyOnGround",0.1); // allows "just-in-time" jumps
+
+		if( onGround && ca.isPressed(MoveDown) ) {
+			var platformRow = getGroundPlatformRow();
+			if( platformRow!=null ) {
+				ignoredPlatformRow = platformRow;
+				cd.unset("recentlyOnGround");
+				vBase.clearY();
+				vBase.addY(0.12);
+			}
+		}
 
 
 		// Jump
