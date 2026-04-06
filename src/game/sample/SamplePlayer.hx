@@ -902,6 +902,18 @@ class SamplePlayer extends Entity {
 				return;
 			}
 
+		// Feed Recombobulators when touched
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SampleRecombobulator) ) {
+				var recombobulator = e.as(SampleRecombobulator);
+				if( !Lib.rectangleOverlaps(left, top, wid, hei, recombobulator.left, recombobulator.top, recombobulator.wid, recombobulator.hei) )
+					continue;
+
+				recombobulator.absorbPercentage(getCompletionPercentage());
+				destroy();
+				return;
+			}
+
 		// Enemy body contact
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SampleEnemy) ) {

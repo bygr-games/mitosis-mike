@@ -21,6 +21,7 @@ class Assets {
 	public static var enemyScared : SpriteLib;
 	public static var enemySpike : SpriteLib;
 	public static var playerExit : SpriteLib;
+	public static var recombobulator : SpriteLib;
 
 	/** LDtk world data **/
 	public static var worldData : World;
@@ -45,6 +46,7 @@ class Assets {
 		enemyScared = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_scared.toAseprite());
 		enemySpike = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.enemy_spike.toAseprite());
 		playerExit = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.playerExit.toAseprite());
+		recombobulator = dn.heaps.assets.Aseprite.convertToSLib(Const.FPS, hxd.Res.atlas.recombobulator.toAseprite());
 
 		// Hot-reloading of CastleDB
 		#if debug
@@ -106,6 +108,7 @@ class Assets {
 		enemyScared.tmod = tmod;
 		enemySpike.tmod = tmod;
 		playerExit.tmod = tmod;
+		recombobulator.tmod = tmod;
 		// <-- add other atlas TMOD updates here
 	}
 

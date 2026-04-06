@@ -15,6 +15,19 @@ class SampleGame extends Game {
 			for( exitSpawn in level.data.l_Entities.all_PlayerExit )
 				new SamplePlayerExit(exitSpawn.cx, exitSpawn.cy);
 		}
+
+		var recombobulatorSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_Recombobulator");
+		if( recombobulatorSpawns != null ) {
+			for( recombobulatorSpawn in recombobulatorSpawns ) {
+				var cx:Int = cast Reflect.field(recombobulatorSpawn, "cx");
+				var cy:Int = cast Reflect.field(recombobulatorSpawn, "cy");
+				var rawRequired:Dynamic = Reflect.field(recombobulatorSpawn, "f_RequiredPercentage");
+				if( rawRequired==null )
+					rawRequired = Reflect.field(recombobulatorSpawn, "RequiredPercentage");
+				var requiredPercentage = rawRequired==null ? 0.0 : cast rawRequired;
+				new SampleRecombobulator(cx, cy, requiredPercentage);
+			}
+		}
 		
 		// Spawn player
 		new SamplePlayer();
