@@ -21,7 +21,8 @@ class SamplePlayer extends Entity {
 	static inline var SPLIT_SPAWN_SEARCH_HEIGHT = 32.0;
 	static inline var COLLISION_EPSILON = 0.001;
 	static inline var SPAWN_IMMUNITY_S = 1.0;
-	static inline var CAMERA_FIT_PADDING = 32.0;
+	static inline var CAMERA_FIT_PADDING_X = 30.0;
+	static inline var CAMERA_FIT_PADDING_Y = 32.0;
 	static inline var CAMERA_DEFAULT_ZOOM = 1;
 	static var SIZE_LEVELS = [
 		{ wid:16, hei:32, per: 100, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.96 },
@@ -508,26 +509,12 @@ class SamplePlayer extends Entity {
 	}
 
 	static function resolveSurvivorsMidpoint(out:LPoint) {
-		var totalX = 0.0;
-		var totalY = 0.0;
-		var count = 0;
-
-		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var player = e.as(SamplePlayer);
-				if( !player.isAlive() )
-					continue;
-
-				totalX += player.centerX;
-				totalY += player.centerY;
-				count++;
-			}
-
-		if( count==0 )
+		var bounds = getSurvivorBounds();
+		if( bounds==null )
 			return false;
 
-		out.levelX = totalX / count;
-		out.levelY = totalY / count;
+		out.levelX = (bounds.minX - CAMERA_FIT_PADDING_X + bounds.maxX + CAMERA_FIT_PADDING_X) * 0.5;
+		out.levelY = (bounds.minY + bounds.maxY) * 0.5;
 		return true;
 	}
 
@@ -570,8 +557,12 @@ class SamplePlayer extends Entity {
 		if( bounds==null )
 			return;
 
-		var fitWidth = M.fmax(Const.GRID*2, bounds.maxX-bounds.minX) + CAMERA_FIT_PADDING*2;
-		var fitHeight = M.fmax(Const.GRID*2, bounds.maxY-bounds.minY) + CAMERA_FIT_PADDING*2;
+		var fitLeft = bounds.minX - CAMERA_FIT_PADDING_X;
+		var fitRight = bounds.maxX + CAMERA_FIT_PADDING_X;
+		var fitTop = bounds.minY - CAMERA_FIT_PADDING_Y;
+		var fitBottom = bounds.maxY + CAMERA_FIT_PADDING_Y;
+		var fitWidth = M.fmax(Const.GRID*2, fitRight-fitLeft);
+		var fitHeight = M.fmax(Const.GRID*2, fitBottom-fitTop);
 		var zoomX = Game.ME.stageWid / Const.SCALE / fitWidth;
 		var zoomY = Game.ME.stageHei / Const.SCALE / fitHeight;
 		var desiredZoom = M.fmin(CAMERA_DEFAULT_ZOOM, M.fmin(zoomX, zoomY));
