@@ -14,7 +14,7 @@ class SampleRecombobulator extends Entity {
 	public function new(cx:Int, cy:Int, requiredPercentage:Float) {
 		super(cx, cy);
 		iwid = 16;
-		ihei = 32;
+		ihei = 48;
 		this.requiredPercentage = M.fmax(0, requiredPercentage);
 		updateTag();
 	}
@@ -49,6 +49,10 @@ class SampleRecombobulator extends Entity {
 		return completePercentage + REQUIRED_EPSILON >= requiredPercentage;
 	}
 
+	public inline function isDeactivated() {
+		return isComplete();
+	}
+
 	function trySpawnPlayer() {
 		if( hasSpawnedPlayer || !isComplete() )
 			return;
@@ -60,7 +64,7 @@ class SampleRecombobulator extends Entity {
 	}
 
 	public function absorbPercentage(value:Float) {
-		if( hasSpawnedPlayer || value<=0 )
+		if( isDeactivated() || value<=0 )
 			return;
 
 		completePercentage = M.fmin(requiredPercentage, completePercentage + value);
