@@ -25,12 +25,12 @@ class SamplePlayer extends Entity {
 	static inline var CAMERA_VISIBLE_PADDING = 12.0;
 	static inline var CAMERA_DEFAULT_ZOOM = 1;
 	static var SIZE_LEVELS = [
-		{ wid:16, hei:32, per: 100, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
-		{ wid:12, hei:24, per: 100 / 2, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
-		{ wid:8, hei:16, per: 100 / 4, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
-		{ wid:6, hei:12, per: 100 / 8, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
-		{ wid:4, hei:8, per: 100 / 16, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
-		{ wid:3, hei:6, per: 100 / 32, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.94 },
+		{ wid:16, hei:32, per: 100, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.96 },
+		{ wid:12, hei:24, per: 100 / 2, hAcc: 0.045, hFric: 0.852, vAcc: 0.05, vFric: 0.956 },
+		{ wid:8, hei:16, per: 100 / 4, hAcc: 0.045, hFric: 0.864, vAcc: 0.05, vFric: 0.952 },
+		{ wid:6, hei:12, per: 100 / 8, hAcc: 0.045, hFric: 0.876, vAcc: 0.05, vFric: 0.948 },
+		{ wid:4, hei:8, per: 100 / 16, hAcc: 0.045, hFric: 0.888, vAcc: 0.05, vFric: 0.944 },
+		{ wid:3, hei:6, per: 100 / 32, hAcc: 0.045, hFric: 0.9, vAcc: 0.05, vFric: 0.94 },
 	];
 
 	var ca : ControllerAccess<GameAction>;
