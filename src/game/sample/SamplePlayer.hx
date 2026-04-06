@@ -40,6 +40,7 @@ class SamplePlayer extends Entity {
 	static var levelStartByUid : Map<Int,{ cx:Int, cy:Int }>;
 	var fallbackBitmap : Null<h2d.Bitmap>;
 	var sizeLevel(default,null) : Int;
+	var pullTarget : Null<SampleRecombobulator>;
 
 	var animIdle : Null<String>;
 	var animRun : Null<String>;
@@ -88,6 +89,8 @@ class SamplePlayer extends Entity {
 	}
 
 	inline function isSolidRecombobulator(other:SampleRecombobulator) {
+		if( isBeingPulledInto(other) )
+			return false;
 		return !other.destroyed && other.isDeactivated();
 	}
 
@@ -736,6 +739,28 @@ class SamplePlayer extends Entity {
 		return !destroyed && vBase.dy==0 && hasGroundSupport();
 	}
 
+	public inline function isBeingPulled() {
+		return pullTarget!=null && !destroyed && isAlive();
+	}
+
+	public inline function isBeingPulledInto(target:SampleRecombobulator) {
+		return pullTarget==target && isBeingPulled();
+	}
+
+	public function startPullInto(target:SampleRecombobulator) {
+		if( target==null || destroyed || !isAlive() )
+			return;
+
+		pullTarget = target;
+		cancelVelocities();
+		cd.unset("recentlyOnGround");
+		ignoredPlatformRow = null;
+	}
+
+	public function stopPull() {
+		pullTarget = null;
+	}
+
 	function applyAnim(group:Null<String>) {
 		if( group==null || currentAnim==group )
 			return;
@@ -920,6 +945,11 @@ class SamplePlayer extends Entity {
 	override function preUpdate() {
 		super.preUpdate();
 
+		if( isBeingPulled() ) {
+			walkSpeed = 0;
+			return;
+		}
+
 		walkSpeed = 0;
 		if( onGround )
 			cd.setS("recentlyOnGround",0.1); // allows "just-in-time" jumps
@@ -955,6 +985,12 @@ class SamplePlayer extends Entity {
 
 	override function fixedUpdate() {
 		super.fixedUpdate();
+
+		if( isBeingPulled() ) {
+			cancelVelocities();
+			updateAnimState();
+			return;
+		}
 
 		// Gravity
 		if( !onGround )
