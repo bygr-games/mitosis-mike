@@ -41,8 +41,7 @@ class Camera extends GameChildProcess {
 
 	/** Actual zoom value without modifiers **/
 	var baseZoom = 1.0;
-	var zoomSpeed = 0.0014;
-	var zoomFrict = 0.9;
+	var zoomFrict = 0.86;
 
 	/** Current zoom factor, including all modifiers **/
 	public var zoom(get,never) : Float;
@@ -327,31 +326,15 @@ class Camera extends GameChildProcess {
 		final level = Game.ME.level;
 
 
-		// Zoom movement
+		// Zoom movement (stable framerate-independent easing)
 		var tz = targetZoom;
-
-		if( tz!=baseZoom ) {
-			if( tz>baseZoom)
-				dz+=zoomSpeed;
-			else
-				dz-=zoomSpeed;
-		}
-		else
-			dz = 0;
-
-		var prevZoom = baseZoom;
-		baseZoom+=dz*tmod;
+		var zoomBlend = 1 - Math.pow(zoomFrict, tmod);
+		baseZoom += (tz - baseZoom) * zoomBlend;
+		if( M.fabs(tz-baseZoom)<=0.0005 )
+			baseZoom = tz;
+		dz = tz - baseZoom;
 
 		bumpZoomFactor *= Math.pow(0.9, tmod);
-		dz*=Math.pow(zoomFrict, tmod);
-		if( M.fabs(tz-baseZoom)<=0.05*tmod )
-			dz*=Math.pow(0.8,tmod);
-
-		// Reached target zoom
-		if( prevZoom<tz && baseZoom>=tz || prevZoom>tz && baseZoom<=tz ) {
-			baseZoom = tz;
-			dz = 0;
-		}
 
 
 		// Follow target entity or computed point
@@ -360,15 +343,26 @@ class Camera extends GameChildProcess {
 			var spdY = 0.023*trackingSpeed*zoom;
 			var tx = resolvedTarget.levelX + targetOffX;
 			var ty = resolvedTarget.levelY + targetOffY;
+			var deadZoneX = deadZonePctX*pxWid;
+			var deadZoneY = deadZonePctY*pxHei;
 
-			var a = rawFocus.angTo(tx,ty);
-			var distX = M.fabs( tx - rawFocus.levelX );
-			if( distX>=deadZonePctX*pxWid )
-				dx += Math.cos(a) * (0.8*distX-deadZonePctX*pxWid) * spdX * tmod;
+			var deltaX = tx - rawFocus.levelX;
+			var distX = M.fabs(deltaX);
+			if( distX>=deadZoneX ) {
+				var signX = deltaX<0 ? -1 : 1;
+				dx += signX * (distX-deadZoneX) * spdX * tmod;
+			}
+			else
+				dx *= Math.pow(0.75, tmod);
 
-			var distY = M.fabs( ty - rawFocus.levelY );
-			if( distY>=deadZonePctY*pxHei)
-				dy += Math.sin(a) * (0.8*distY-deadZonePctY*pxHei) * spdY * tmod;
+			var deltaY = ty - rawFocus.levelY;
+			var distY = M.fabs(deltaY);
+			if( distY>=deadZoneY ) {
+				var signY = deltaY<0 ? -1 : 1;
+				dy += signY * (distY-deadZoneY) * spdY * tmod;
+			}
+			else
+				dy *= Math.pow(0.75, tmod);
 		}
 
 		// Compute frictions

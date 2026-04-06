@@ -22,7 +22,6 @@ class SamplePlayer extends Entity {
 	static inline var COLLISION_EPSILON = 0.001;
 	static inline var SPAWN_IMMUNITY_S = 1.0;
 	static inline var CAMERA_FIT_PADDING = 32.0;
-	static inline var CAMERA_VISIBLE_PADDING = 12.0;
 	static inline var CAMERA_DEFAULT_ZOOM = 1;
 	static var SIZE_LEVELS = [
 		{ wid:16, hei:32, per: 100, hAcc: 0.045, hFric: 0.84, vAcc: 0.05, vFric: 0.96 },
@@ -578,17 +577,7 @@ class SamplePlayer extends Entity {
 		var desiredZoom = M.fmin(CAMERA_DEFAULT_ZOOM, M.fmin(zoomX, zoomY));
 
 		var camera = Game.ME.camera;
-		var allVisible = bounds.minX >= camera.pxLeft + CAMERA_VISIBLE_PADDING
-			&& bounds.maxX <= camera.pxRight - CAMERA_VISIBLE_PADDING
-			&& bounds.minY >= camera.pxTop + CAMERA_VISIBLE_PADDING
-			&& bounds.maxY <= camera.pxBottom - CAMERA_VISIBLE_PADDING;
-
-		if( !allVisible || camera.zoom > desiredZoom ) {
-			camera.centerOnTarget();
-			camera.forceZoom(desiredZoom);
-		}
-		else
-			camera.zoomTo(desiredZoom);
+		camera.zoomTo(desiredZoom);
 	}
 
 
@@ -607,7 +596,8 @@ class SamplePlayer extends Entity {
 		}
 
 		// Misc inits
-		camera.trackPoint(resolveSurvivorsMidpoint, trackCamera);
+		if( trackCamera )
+			camera.trackPoint(resolveSurvivorsMidpoint, false);
 		camera.clampToLevelBounds = true;
 
 		// Init controller
