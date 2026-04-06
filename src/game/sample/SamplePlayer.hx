@@ -99,6 +99,23 @@ class SamplePlayer extends Entity {
 		return bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
 	}
 
+	inline function recombobulatorGridsOverlapVertically(other:SampleRecombobulator) : Bool {
+		var playerTopCy = pxToLevelCoord(top + COLLISION_EPSILON);
+		var playerBottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
+		var recombTopCy = pxToLevelCoord(other.top + COLLISION_EPSILON);
+		var recombBottomCy = pxToLevelCoord(other.bottom - COLLISION_EPSILON);
+
+		return playerBottomCy >= recombTopCy && playerTopCy <= recombBottomCy;
+	}
+
+	inline function recombobulatorLeftGridColumn(other:SampleRecombobulator) : Int {
+		return pxToLevelCoord(other.left + COLLISION_EPSILON);
+	}
+
+	inline function recombobulatorRightGridColumn(other:SampleRecombobulator) : Int {
+		return pxToLevelCoord(other.right - COLLISION_EPSILON);
+	}
+
 	function updateIgnoredPlatformRow() {
 		if( ignoredPlatformRow!=null && bottom > (ignoredPlatformRow + 1) * Const.GRID + COLLISION_EPSILON )
 			ignoredPlatformRow = null;
@@ -254,12 +271,15 @@ class SamplePlayer extends Entity {
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SampleRecombobulator) ) {
 				var other = e.as(SampleRecombobulator);
-				if( !isSolidRecombobulator(other) || !overlapsRecombobulatorY(other) )
+				if( !isSolidRecombobulator(other) || !recombobulatorGridsOverlapVertically(other) )
 					continue;
 
-				if( right > other.left && left < other.left && centerX <= other.centerX )
+				var recombLeftCx = recombobulatorLeftGridColumn(other);
+				var recombRightCx = recombobulatorRightGridColumn(other);
+				if( probeCx >= recombLeftCx && probeCx <= recombRightCx ) {
 					if( best==null || other.left<best )
 						best = other.left;
+				}
 			}
 
 		return best;
@@ -300,12 +320,15 @@ class SamplePlayer extends Entity {
 		for( e in Entity.ALL )
 			if( !e.destroyed && e.is(SampleRecombobulator) ) {
 				var other = e.as(SampleRecombobulator);
-				if( !isSolidRecombobulator(other) || !overlapsRecombobulatorY(other) )
+				if( !isSolidRecombobulator(other) || !recombobulatorGridsOverlapVertically(other) )
 					continue;
 
-				if( left < other.right && right > other.right && centerX >= other.centerX )
+				var recombLeftCx = recombobulatorLeftGridColumn(other);
+				var recombRightCx = recombobulatorRightGridColumn(other);
+				if( probeCx >= recombLeftCx && probeCx <= recombRightCx ) {
 					if( best==null || other.right>best )
 						best = other.right;
+				}
 			}
 
 		return best;
