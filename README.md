@@ -4,12 +4,67 @@ Mitosis Mike is a game jam project built with Haxe, Heaps, and HashLink.
 
 ## Installation
 
-1. Install Haxe and HashLink.
-2. From the repository root, install project dependencies:
+### Required tools
+
+Install these first:
+
+1. Haxe (includes `haxelib`)
+2. HashLink (`hl` runtime)
+
+### Required Haxelib dependencies
+
+Core libraries used by this project:
+
+- `castle`
+- `heaps`
+- `hscript`
+- `deepnightLibs`
+- `ldtk-haxe-api`
+- `heaps-aseprite`
+- `ase`
+- `redistHelper`
+
+Target-specific libraries:
+
+- OpenGL/HashLink build (`build.opengl.hxml`): `hlsdl`
+- DirectX/HashLink build (`build.directx.hxml`): `hldx`
+
+### Haxelib install commands (exact)
+
+Run these from the repository root.
+
+Core (git-based):
+
+```bash
+haxelib --always git castle https://github.com/deepnight/castle.git
+haxelib --always git heaps https://github.com/deepnight/heaps.git
+haxelib --always git hscript https://github.com/HaxeFoundation/hscript.git
+haxelib --always git deepnightLibs https://github.com/deepnight/deepnightLibs.git
+haxelib --always git ldtk-haxe-api https://github.com/deepnight/ldtk-haxe-api.git
+haxelib --always git heaps-aseprite https://github.com/deepnight/heaps-aseprite.git
+```
+
+Core (registry install):
+
+```bash
+haxelib --always install ase
+haxelib --always install redistHelper
+```
+
+Target-specific (git-based):
+
+```bash
+haxelib --always git hlsdl https://github.com/HaxeFoundation/hashlink.git master libs/sdl
+haxelib --always git hldx https://github.com/HaxeFoundation/hashlink.git master libs/directx
+```
+
+From the repository root, install everything with:
 
 ```bash
 haxe setup.hxml
 ```
+
+This command installs all dependencies above, including git-based haxelibs.
 
 ## Startup
 
