@@ -30,6 +30,10 @@ class SampleEnemy extends Entity {
 		return enemyType=="scared" || enemyType=="shooting" || enemyType=="green";
 	}
 
+	public inline function isHazard() {
+		return enemyType=="saw" || enemyType=="spike";
+	}
+
 	inline function pxToLevelCoord(v:Float) {
 		return Std.int(Math.floor(v / Const.GRID));
 	}
@@ -364,6 +368,25 @@ class SampleEnemy extends Entity {
 		strategy.update(this);
 		if( destroyed )
 			return;
+
+		if( !isHazard() ) {
+			for( e in Entity.ALL )
+				if( !e.destroyed && e!=this && e.is(SampleEnemy) ) {
+					var other = e.as(SampleEnemy);
+					if( !other.isAlive() || !other.isHazard() )
+						continue;
+
+					var overlapsX = right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON;
+					var overlapsY = bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
+					if( overlapsX && overlapsY ) {
+						kill(other);
+						break;
+					}
+				}
+
+			if( destroyed )
+				return;
+		}
 
 		updateAnimState();
 	}
