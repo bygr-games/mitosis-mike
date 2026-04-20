@@ -169,6 +169,35 @@ class Fx extends GameChildProcess {
 		}
 	}
 
+	public function enemyBloodBurst(x:Float, y:Float, amount=64) {
+		for( i in 0...amount ) {
+			var p = allocMain_normal(D.tiles.fxDot, x+rnd(0,3,true), y+rnd(0,3,true));
+			p.alpha = rnd(0.75, 1);
+			p.colorize(0xC61D1D);
+			p.setScale(rnd(0.7, 1.6));
+			p.moveAwayFrom(x, y, rnd(0.8, 3.8));
+			p.gy = rnd(0.01, 0.04);
+			p.frict = rnd(0.94, 0.985);
+			p.lifeS = rnd(10.2, 20.4);
+
+			p.onUpdate = function(p:HParticle) {
+				if( p.data0==1 )
+					return;
+
+				if( collides(p, 0, p.dy>=0 ? 1 : -1) || collides(p, p.dx>=0 ? 1 : -1, 0) ) {
+					p.data0 = 1;
+					p.dx = 0;
+					p.dy = 0;
+					p.gx = 0;
+					p.gy = 0;
+					p.frict = 1;
+					p.lifeS = rnd(8, 14);
+					p.alpha = rnd(0.7, 0.95);
+				}
+			};
+		}
+	}
+
 
 	override function update() {
 		super.update();

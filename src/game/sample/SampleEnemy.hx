@@ -280,6 +280,11 @@ class SampleEnemy extends Entity {
 		applyAnim(next);
 	}
 
+	override function onDie() {
+		fx.enemyBloodBurst(centerX, centerY, 256);
+		super.onDie();
+	}
+
 	override function dispose() {
 		super.dispose();
 		if( strategy != null ) {
