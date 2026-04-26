@@ -1,5 +1,16 @@
 package sample;
 
+private typedef EnemyTypeDef = {
+	var id : String;
+	var createStrategy : Void->EnemyStrategy;
+	var spriteLib : Void->SpriteLib;
+	var harmless : Bool;
+	var hazard : Bool;
+	var fallbackColor : Int;
+	var useInBoundsWallCollision : Bool;
+	var despawnAfterLeavingLevel : Bool;
+}
+
 /**
 	SampleEnemy is an Entity that spawns from level data and exhibits different
 	behaviors based on its strategy pattern implementation.
@@ -13,9 +24,12 @@ package sample;
 **/
 class SampleEnemy extends Entity {
 	static inline var COLLISION_EPSILON = 0.001;
+	static inline var DEFAULT_ENEMY_TYPE = "saw";
+	static final ENEMY_DEFS = initEnemyDefs();
 
 	var strategy : EnemyStrategy;
 	var enemyType : String;
+	var enemyDef : EnemyTypeDef;
 	var enemyLib : SpriteLib;
 	var fallbackBitmap : Null<h2d.Bitmap>;
 
@@ -26,12 +40,73 @@ class SampleEnemy extends Entity {
 	var animShoot : Null<String>;
 	var currentAnim : Null<String>;
 
+	static function initEnemyDefs() {
+		var defs = new haxe.ds.StringMap<EnemyTypeDef>();
+
+		defs.set("saw", {
+			id: "saw",
+			createStrategy: function() return new SawEnemyStrategy(),
+			spriteLib: function() return Assets.enemySaw,
+			harmless: false,
+			hazard: true,
+			fallbackColor: 0x0000FF,
+			useInBoundsWallCollision: false,
+			despawnAfterLeavingLevel: false,
+		});
+
+		defs.set("red", {
+			id: "red",
+			createStrategy: function() return new RedEnemyStrategy(),
+			spriteLib: function() return Assets.enemyRed,
+			harmless: false,
+			hazard: false,
+			fallbackColor: 0xFF0000,
+			useInBoundsWallCollision: false,
+			despawnAfterLeavingLevel: false,
+		});
+
+		defs.set("shooting", {
+			id: "shooting",
+			createStrategy: function() return new ShootingEnemyStrategy(),
+			spriteLib: function() return Assets.enemyShooting,
+			harmless: true,
+			hazard: false,
+			fallbackColor: 0x008000,
+			useInBoundsWallCollision: false,
+			despawnAfterLeavingLevel: false,
+		});
+
+		defs.set("scared", {
+			id: "scared",
+			createStrategy: function() return new ScaredEnemyStrategy(),
+			spriteLib: function() return Assets.enemyScared,
+			harmless: true,
+			hazard: false,
+			fallbackColor: 0x7A7AFF,
+			useInBoundsWallCollision: true,
+			despawnAfterLeavingLevel: true,
+		});
+
+		defs.set("spike", {
+			id: "spike",
+			createStrategy: function() return new SpikeEnemyStrategy(),
+			spriteLib: function() return Assets.enemySpike,
+			harmless: false,
+			hazard: true,
+			fallbackColor: 0x666666,
+			useInBoundsWallCollision: false,
+			despawnAfterLeavingLevel: false,
+		});
+
+		return defs;
+	}
+
 	public inline function isHarmless() {
-		return enemyType=="scared" || enemyType=="shooting" || enemyType=="green";
+		return enemyDef.harmless;
 	}
 
 	public inline function isHazard() {
-		return enemyType=="saw" || enemyType=="spike";
+		return enemyDef.hazard;
 	}
 
 	inline function pxToLevelCoord(v:Float) {
@@ -144,26 +219,18 @@ class SampleEnemy extends Entity {
 	public function new(cx:Int, cy:Int, type:String) {
 		super(5, 5);
 
-		enemyType = switch(type.toLowerCase()) {
-			case "blue": "saw";
-			default: type.toLowerCase();
-		};
+		enemyDef = ENEMY_DEFS.get(type.toLowerCase());
+		if( enemyDef==null ) {
+			trace('Unknown enemy type: $type, defaulting to $DEFAULT_ENEMY_TYPE');
+			enemyDef = ENEMY_DEFS.get(DEFAULT_ENEMY_TYPE);
+		}
+		enemyType = enemyDef.id;
 		setPosCase(cx, cy);
 
 		// Initialize physics
 		vBase.setFricts(0.84, 0.94);
 
-		// Create strategy based on type
-		strategy = switch(enemyType) {
-			case "saw": new SawEnemyStrategy();
-			case "red": new RedEnemyStrategy();
-			case "shooting", "green": new ShootingEnemyStrategy();
-			case "scared": new ScaredEnemyStrategy();
-			case "spike": new SpikeEnemyStrategy();
-			default: 
-				trace('Unknown enemy type: $type, defaulting to saw');
-				new SawEnemyStrategy();
-		}
+		strategy = enemyDef.createStrategy();
 
 		strategy.initHitbox(this);
 
@@ -173,14 +240,7 @@ class SampleEnemy extends Entity {
 	}
 
 	function initGraphics() {
-		enemyLib = switch(enemyType) {
-			case "red": Assets.enemyRed;
-			case "saw": Assets.enemySaw;
-			case "shooting", "green": Assets.enemyShooting;
-			case "scared": Assets.enemyScared;
-			case "spike": Assets.enemySpike;
-			default: Assets.enemySaw;
-		}
+		enemyLib = enemyDef.spriteLib();
 
 		var baseNames = [
 			enemyType,
@@ -216,16 +276,7 @@ class SampleEnemy extends Entity {
 		if( fallbackBitmap!=null )
 			return;
 
-		var col = switch(enemyType) {
-			case "saw": 0x0000FF;
-			case "red": 0xFF0000;
-			case "shooting", "green": 0x008000;
-			case "scared": 0x7A7AFF;
-			case "spike": 0x666666;
-			default: 0xBBBBBB;
-		}
-
-		fallbackBitmap = new h2d.Bitmap(h2d.Tile.fromColor(col, Std.int(iwid), Std.int(ihei)), spr);
+		fallbackBitmap = new h2d.Bitmap(h2d.Tile.fromColor(enemyDef.fallbackColor, Std.int(iwid), Std.int(ihei)), spr);
 		fallbackBitmap.tile.setCenterRatio(0.5, 1);
 	}
 
@@ -299,7 +350,7 @@ class SampleEnemy extends Entity {
 
 		// Right collision
 		var rightCollisionX = dxTotal>0
-			? enemyType=="scared"
+			? enemyDef.useInBoundsWallCollision
 				? getSolidColumnOnRightInBounds()
 				: getSolidColumnOnRight()
 			: null;
@@ -310,7 +361,7 @@ class SampleEnemy extends Entity {
 
 		// Left collision
 		var leftCollisionX = dxTotal<0
-			? enemyType=="scared"
+			? enemyDef.useInBoundsWallCollision
 				? getSolidColumnOnLeftInBounds()
 				: getSolidColumnOnLeft()
 			: null;
@@ -364,7 +415,7 @@ class SampleEnemy extends Entity {
 		if( destroyed )
 			return;
 
-		if( enemyType=="scared" && hasLeftLevelHorizontally() ) {
+		if( enemyDef.despawnAfterLeavingLevel && hasLeftLevelHorizontally() ) {
 			destroy();
 			return;
 		}
