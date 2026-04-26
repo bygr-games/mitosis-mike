@@ -32,16 +32,10 @@ class SampleGame extends Game {
 		// Spawn player
 		new SamplePlayer();
 
-		// Spawn saw enemies (fall back to the old name to avoid breaking older maps)
-		var sawSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_SawEnemy");
-		if( sawSpawns == null )
-			sawSpawns = cast Reflect.field(level.data.l_Entities, "all_BlueEnemy");
-		if( sawSpawns != null ) {
-			for( sawSpawn in sawSpawns ) {
-				var cx:Int = cast Reflect.field(sawSpawn, "cx");
-				var cy:Int = cast Reflect.field(sawSpawn, "cy");
-				new SampleEnemy(cx, cy, "saw");
-			}
+		// Spawn saw enemies
+		if( level.data.l_Entities.all_SawEnemy != null ) {
+			for( sawSpawn in level.data.l_Entities.all_SawEnemy )
+				new SampleEnemy(sawSpawn.cx, sawSpawn.cy, "saw");
 		}
 
 		// Spawn red enemies
@@ -51,16 +45,10 @@ class SampleGame extends Game {
 			}
 		}
 
-		// Spawn shooting enemies (fall back to the old name to avoid breaking older maps)
-		var shootingSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_ShootingEnemy");
-		if( shootingSpawns == null )
-			shootingSpawns = cast Reflect.field(level.data.l_Entities, "all_GreenEnemy");
-		if( shootingSpawns != null ) {
-			for( shootingSpawn in shootingSpawns ) {
-				var cx:Int = cast Reflect.field(shootingSpawn, "cx");
-				var cy:Int = cast Reflect.field(shootingSpawn, "cy");
-				new SampleEnemy(cx, cy, "shooting");
-			}
+		// Spawn shooting enemies
+		if( level.data.l_Entities.all_ShootingEnemy != null ) {
+			for( shootingSpawn in level.data.l_Entities.all_ShootingEnemy )
+				new SampleEnemy(shootingSpawn.cx, shootingSpawn.cy, "shooting");
 		}
 
 		var scaredSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_ScaredEnemy");
