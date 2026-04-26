@@ -40,9 +40,8 @@ class SampleGame extends Game {
 
 		// Spawn red enemies
 		if( level.data.l_Entities.all_RedEnemy != null ) {
-			for( redSpawn in level.data.l_Entities.all_RedEnemy ) {
+			for( redSpawn in level.data.l_Entities.all_RedEnemy )
 				new SampleEnemy(redSpawn.cx, redSpawn.cy, "red");
-			}
 		}
 
 		// Spawn shooting enemies
@@ -51,22 +50,16 @@ class SampleGame extends Game {
 				new SampleEnemy(shootingSpawn.cx, shootingSpawn.cy, "shooting");
 		}
 
-		var scaredSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_ScaredEnemy");
-		if( scaredSpawns != null ) {
-			for( scaredSpawn in scaredSpawns ) {
-				var cx:Int = cast Reflect.field(scaredSpawn, "cx");
-				var cy:Int = cast Reflect.field(scaredSpawn, "cy");
-				new SampleEnemy(cx, cy, "scared");
-			}
+		// Spawn scared enemies
+		if( level.data.l_Entities.all_ScaredEnemy != null ) {
+			for( scaredSpawn in level.data.l_Entities.all_ScaredEnemy )
+				new SampleEnemy(scaredSpawn.cx, scaredSpawn.cy, "scared");
 		}
 
-		var spikeSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_SpikeEnemy");
-		if( spikeSpawns != null ) {
-			for( spikeSpawn in spikeSpawns ) {
-				var cx:Int = cast Reflect.field(spikeSpawn, "cx");
-				var cy:Int = cast Reflect.field(spikeSpawn, "cy");
-				new SampleEnemy(cx, cy, "spike");
-			}
+		// Spawn spike enemies
+		if( level.data.l_Entities.all_SpikeEnemy != null ) {
+			for( spikeSpawn in level.data.l_Entities.all_SpikeEnemy )
+				new SampleEnemy(spikeSpawn.cx, spikeSpawn.cy, "spike");
 		}
 	}
 }
