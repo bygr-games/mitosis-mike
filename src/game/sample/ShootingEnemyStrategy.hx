@@ -1,22 +1,21 @@
 package sample;
 
-class ShootingEnemyStrategy implements EnemyStrategy {
+class ShootingEnemyStrategy extends BaseEnemyStrategy {
 	var minShootIntervalS = 1.5;
 	var maxShootIntervalS = 3.0;
 	var maxInitialShootDelayS = 1.5;
 
-	public function new() {}
+	public function new() {
+		super();
+	}
 
-	public function initHitbox(enemy:SampleEnemy):Void {
-		enemy.iwid = 16;
-		enemy.ihei = 32;
-		enemy.setPivots(0.5, 1);
+	override public function initHitbox(enemy:SampleEnemy):Void {
+		setHitbox(enemy, 16, 32);
 		enemy.cd.setS("shootingEnemyShoot", enemy.rnd(0, maxInitialShootDelayS));
 	}
 
-	public function update(enemy:SampleEnemy):Void {
-		if( !isOnGround(enemy) )
-			enemy.vBase.addY(0.05);
+	override public function update(enemy:SampleEnemy):Void {
+		applyGravityIfAirborne(enemy);
 
 		var shootUpward = hasAnyPlayerOnTop(enemy);
 		var closestPlayer = shootUpward ? null : getClosestPlayer(enemy);
@@ -34,24 +33,6 @@ class ShootingEnemyStrategy implements EnemyStrategy {
 			}
 		}
 	}
-
-	public function onYCollision(enemy:SampleEnemy):Void {
-		if( enemy.yr > 1 && isCollisionBelow(enemy) ) {
-			enemy.vBase.clearY();
-			enemy.vBump.clearY();
-			enemy.yr = 1;
-		}
-	}
-
-	public function onXCollision(enemy:SampleEnemy, dir:Int):Void {
-		// Shooting enemy does not move horizontally.
-	}
-
-	public function initGraphics(enemy:SampleEnemy):Void {
-		// Graphics are now managed centrally in SampleEnemy.
-	}
-
-	public function dispose():Void {}
 
 	function getClosestPlayer(enemy:SampleEnemy):SamplePlayer {
 		var closest : Null<SamplePlayer> = null;
@@ -84,11 +65,4 @@ class ShootingEnemyStrategy implements EnemyStrategy {
 			&& player.bottom <= enemy.top + 6;
 	}
 
-	private function isOnGround(enemy:SampleEnemy):Bool {
-		return !enemy.destroyed && enemy.vBase.dy == 0 && enemy.hasGroundSupport();
-	}
-
-	private function isCollisionBelow(enemy:SampleEnemy):Bool {
-		return enemy.hasGroundSupport();
-	}
 }

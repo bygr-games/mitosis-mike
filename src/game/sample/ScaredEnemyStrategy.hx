@@ -1,23 +1,22 @@
 package sample;
 
-class ScaredEnemyStrategy implements EnemyStrategy {
+class ScaredEnemyStrategy extends BaseEnemyStrategy {
 	static inline var DETECTION_RANGE_TILES = 5.0;
 	static var STEP_HEIGHT_PX = Const.GRID;
 	static inline var COLLISION_EPSILON = 0.001;
 
 	var runSpeed = 0.055;
 
-	public function new() {}
-
-	public function initHitbox(enemy:SampleEnemy):Void {
-		enemy.iwid = 16;
-		enemy.ihei = 32;
-		enemy.setPivots(0.5, 1);
+	public function new() {
+		super();
 	}
 
-	public function update(enemy:SampleEnemy):Void {
-		if( !isOnGround(enemy) )
-			enemy.vBase.addY(0.05);
+	override public function initHitbox(enemy:SampleEnemy):Void {
+		setHitbox(enemy, 16, 32);
+	}
+
+	override public function update(enemy:SampleEnemy):Void {
+		applyGravityIfAirborne(enemy);
 
 		var player = getClosestNearbyPlayer(enemy);
 		if( player==null )
@@ -33,24 +32,6 @@ class ScaredEnemyStrategy implements EnemyStrategy {
 		if( isOnGround(enemy) && !enemy.hasWallInDirectionIgnoringLevelBounds(fleeDir) && ( enemy.hasGroundAhead(fleeDir) || canLeaveLevel ) )
 			enemy.vBase.addX(fleeDir * runSpeed);
 	}
-
-	public function onYCollision(enemy:SampleEnemy):Void {
-		if( enemy.yr > 1 && enemy.hasGroundSupport() ) {
-			enemy.vBase.clearY();
-			enemy.vBump.clearY();
-			enemy.yr = 1;
-		}
-	}
-
-	public function onXCollision(enemy:SampleEnemy, dir:Int):Void {
-		// Scared enemies don't force a turn here; they only move when fleeing.
-	}
-
-	public function initGraphics(enemy:SampleEnemy):Void {
-		// Graphics are managed centrally in SampleEnemy.
-	}
-
-	public function dispose():Void {}
 
 	function getClosestNearbyPlayer(enemy:SampleEnemy):SamplePlayer {
 		var nearest : Null<SamplePlayer> = null;
@@ -69,10 +50,6 @@ class ScaredEnemyStrategy implements EnemyStrategy {
 		}
 
 		return nearest;
-	}
-
-	private function isOnGround(enemy:SampleEnemy):Bool {
-		return !enemy.destroyed && enemy.vBase.dy == 0 && enemy.hasGroundSupport();
 	}
 
 	function tryClimbStep(enemy:SampleEnemy, dir:Int):Bool {

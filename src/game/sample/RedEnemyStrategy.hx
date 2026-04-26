@@ -4,55 +4,23 @@ package sample;
 	Red Enemy Strategy: stays in place and jumps constantly.
 	Similar to a jumping enemy pattern found in many 2D platformers.
 **/
-class RedEnemyStrategy implements EnemyStrategy {
+class RedEnemyStrategy extends BaseEnemyStrategy {
 	var jumpInterval = 0.8; // seconds between jumps
 
 	public function new() {
+		super();
 	}
 
-	public function initHitbox(enemy:SampleEnemy):Void {
-		enemy.iwid = 16;
-		enemy.ihei = 16;
-		enemy.setPivots(0.5, 1);
+	override public function initHitbox(enemy:SampleEnemy):Void {
+		setHitbox(enemy, 16, 16);
 	}
 
-	public function update(enemy:SampleEnemy):Void {
-		// Apply gravity
-		if( !isOnGround(enemy) )
-			enemy.vBase.addY(0.05);
+	override public function update(enemy:SampleEnemy):Void {
+		applyGravityIfAirborne(enemy);
 
 		// Try to jump
 		if( isOnGround(enemy) && !enemy.cd.hasSetS("redEnemyJump", jumpInterval) ) {
 			enemy.vBase.addY(-0.85);
 		}
-	}
-
-	public function onYCollision(enemy:SampleEnemy):Void {
-		// Land on ground
-		if( enemy.yr > 1 && isCollisionBelow(enemy) ) {
-			enemy.vBase.clearY();
-			enemy.vBump.clearY();
-			enemy.yr = 1;
-		}
-	}
-
-	public function onXCollision(enemy:SampleEnemy, dir:Int):Void {
-		// Red enemy doesn't move horizontally, so no X collision handling needed
-	}
-
-	public function initGraphics(enemy:SampleEnemy):Void {
-		// Graphics are now managed centrally in SampleEnemy.
-	}
-
-	public function dispose():Void {
-	}
-
-	// Helper functions
-	private function isOnGround(enemy:SampleEnemy):Bool {
-		return !enemy.destroyed && enemy.vBase.dy == 0 && enemy.hasGroundSupport();
-	}
-
-	private function isCollisionBelow(enemy:SampleEnemy):Bool {
-		return enemy.hasGroundSupport();
 	}
 }
