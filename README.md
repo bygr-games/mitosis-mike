@@ -1,5 +1,7 @@
 # Mitosis Mike
 
+[![Deploy GitHub Pages](https://github.com/bygr-games/mitosis-mike/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/bygr-games/mitosis-mike/actions/workflows/deploy-pages.yml)
+
 Mitosis Mike is a game jam project built with Haxe, Heaps, and HashLink.
 
 ## Installation
