@@ -15,8 +15,6 @@ class BaseEnemyStrategy implements EnemyStrategy {
 
 	public function onXCollision(enemy:SampleEnemy, dir:Int):Void {}
 
-	public function initGraphics(enemy:SampleEnemy):Void {}
-
 	public function dispose():Void {}
 
 	inline function setHitbox(enemy:SampleEnemy, width:Int, height:Int):Void {

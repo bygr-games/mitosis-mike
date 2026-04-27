@@ -26,11 +26,6 @@ interface EnemyStrategy {
 	function onXCollision(enemy:SampleEnemy, dir:Int):Void;
 
 	/**
-		Initialize the enemy's visual appearance
-	**/
-	function initGraphics(enemy:SampleEnemy):Void;
-
-	/**
 		Clean up resources
 	**/
 	function dispose():Void;

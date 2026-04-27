@@ -233,9 +233,6 @@ class SampleEnemy extends Entity {
 		strategy = enemyDef.createStrategy();
 
 		strategy.initHitbox(this);
-
-		// Initialize graphics through strategy
-		strategy.initGraphics(this);
 		initGraphics();
 	}
 
