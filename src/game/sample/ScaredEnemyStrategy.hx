@@ -3,7 +3,6 @@ package sample;
 class ScaredEnemyStrategy extends BaseEnemyStrategy {
 	static inline var DETECTION_RANGE_TILES = 5.0;
 	static var STEP_HEIGHT_PX = Const.GRID;
-	static inline var COLLISION_EPSILON = 0.001;
 
 	var runSpeed = 0.055;
 
@@ -34,22 +33,9 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 	}
 
 	function getClosestNearbyPlayer(enemy:SampleEnemy):SamplePlayer {
-		var nearest : Null<SamplePlayer> = null;
-		var nearestDist = DETECTION_RANGE_TILES + 1;
-
-		for( e in Entity.ALL ) {
-			if( e.destroyed || !e.is(SamplePlayer) )
-				continue;
-
-			var player = e.as(SamplePlayer);
-			var dist = enemy.distCase(player);
-			if( dist <= DETECTION_RANGE_TILES && dist < nearestDist ) {
-				nearest = player;
-				nearestDist = dist;
-			}
-		}
-
-		return nearest;
+		return findClosestPlayer(enemy, function(origin, player) {
+			return origin.distCase(player);
+		}, DETECTION_RANGE_TILES);
 	}
 
 	function tryClimbStep(enemy:SampleEnemy, dir:Int):Bool {
@@ -77,10 +63,10 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 		var targetRight = targetAttachX + (1-enemy.pivotX) * enemy.wid;
 		var targetTop = targetAttachY - enemy.pivotY * enemy.hei;
 		var targetBottom = targetAttachY + (1-enemy.pivotY) * enemy.hei;
-		var leftCx = pxToLevelCoord(targetLeft + COLLISION_EPSILON);
-		var rightCx = pxToLevelCoord(targetRight - COLLISION_EPSILON);
-		var topCy = pxToLevelCoord(targetTop + COLLISION_EPSILON);
-		var bottomCy = pxToLevelCoord(targetBottom - COLLISION_EPSILON);
+		var leftCx = pxToLevelCoord(targetLeft + SampleEnemy.COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(targetRight - SampleEnemy.COLLISION_EPSILON);
+		var topCy = pxToLevelCoord(targetTop + SampleEnemy.COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(targetBottom - SampleEnemy.COLLISION_EPSILON);
 
 		for( probeCy in topCy...bottomCy+1 )
 			for( probeCx in leftCx...rightCx+1 )
@@ -94,9 +80,9 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 		var targetLeft = targetAttachX - enemy.pivotX * enemy.wid;
 		var targetRight = targetAttachX + (1-enemy.pivotX) * enemy.wid;
 		var targetBottom = targetAttachY + (1-enemy.pivotY) * enemy.hei;
-		var leftCx = pxToLevelCoord(targetLeft + COLLISION_EPSILON);
-		var rightCx = pxToLevelCoord(targetRight - COLLISION_EPSILON);
-		var supportCy = pxToLevelCoord(targetBottom + COLLISION_EPSILON);
+		var leftCx = pxToLevelCoord(targetLeft + SampleEnemy.COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(targetRight - SampleEnemy.COLLISION_EPSILON);
+		var supportCy = pxToLevelCoord(targetBottom + SampleEnemy.COLLISION_EPSILON);
 
 		for( probeCx in leftCx...rightCx+1 )
 			if( enemy.level.hasCollision(probeCx, supportCy) )

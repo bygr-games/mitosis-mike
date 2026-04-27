@@ -45,4 +45,36 @@ class BaseEnemyStrategy implements EnemyStrategy {
 	inline function hasGroundSupport(enemy:SampleEnemy):Bool {
 		return enemy.hasGroundSupport();
 	}
+
+	inline function eachAlivePlayer(cb:SamplePlayer->Void):Void {
+		for( e in Entity.ALL )
+			if( !e.destroyed && e.is(SamplePlayer) )
+				cb(e.as(SamplePlayer));
+	}
+
+	function findClosestPlayer(enemy:SampleEnemy, distanceFn:(SampleEnemy, SamplePlayer)->Float, ?maxDistance:Null<Float>):Null<SamplePlayer> {
+		var nearest : Null<SamplePlayer> = null;
+		var nearestDist = maxDistance==null ? 999999.0 : maxDistance;
+
+		eachAlivePlayer(function(player) {
+			var dist = distanceFn(enemy, player);
+			if( dist <= nearestDist ) {
+				nearest = player;
+				nearestDist = dist;
+			}
+		});
+
+		return nearest;
+	}
+
+	function hasAnyPlayer(enemy:SampleEnemy, predicate:(SampleEnemy, SamplePlayer)->Bool):Bool {
+		var found = false;
+
+		eachAlivePlayer(function(player) {
+			if( !found && predicate(enemy, player) )
+				found = true;
+		});
+
+		return found;
+	}
 }

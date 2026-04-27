@@ -23,7 +23,7 @@ private typedef EnemyTypeDef = {
 	- "spike": stays in place and splits players on contact
 **/
 class SampleEnemy extends Entity {
-	static inline var COLLISION_EPSILON = 0.001;
+	public static inline var COLLISION_EPSILON = 0.001;
 	static inline var DEFAULT_ENEMY_TYPE = "saw";
 	static final ENEMY_DEFS = initEnemyDefs();
 

@@ -35,28 +35,15 @@ class ShootingEnemyStrategy extends BaseEnemyStrategy {
 	}
 
 	function getClosestPlayer(enemy:SampleEnemy):SamplePlayer {
-		var closest : Null<SamplePlayer> = null;
-		var closestDist = 999999.0;
-
-		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var player = e.as(SamplePlayer);
-				var dist = M.fabs(player.centerX - enemy.centerX);
-				if( dist < closestDist ) {
-					closest = player;
-					closestDist = dist;
-				}
-			}
-
-		return closest;
+		return findClosestPlayer(enemy, function(origin, player) {
+			return M.fabs(player.centerX - origin.centerX);
+		});
 	}
 
 	function hasAnyPlayerOnTop(enemy:SampleEnemy):Bool {
-		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) && isPlayerOnTop(enemy, e.as(SamplePlayer)) )
-				return true;
-
-		return false;
+		return hasAnyPlayer(enemy, function(origin, player) {
+			return isPlayerOnTop(origin, player);
+		});
 	}
 
 	function isPlayerOnTop(enemy:SampleEnemy, player:SamplePlayer):Bool {
