@@ -1,4 +1,7 @@
-package sample;
+﻿package mitosis.projectiles;
+
+import mitosis.enemies.MitosisEnemy;
+import mitosis.MitosisPlayer;
 
 class Projectile extends Entity {
 	var strategy : ProjectileStrategy;
@@ -83,11 +86,11 @@ class Projectile extends Entity {
 		switch( targetType ) {
 			case "player":
 				for( e in Entity.ALL ) {
-					if( e.destroyed || !e.is(SamplePlayer) )
+					if( e.destroyed || !e.is(MitosisPlayer) )
 						continue;
 
 					if( Lib.rectangleOverlaps(left, top, wid, hei, e.left, e.top, e.wid, e.hei) ) {
-						var player = e.as(SamplePlayer);
+						var player = e.as(MitosisPlayer);
 						player.kill(this);
 						strategy.onPlayerHit(this, player);
 						break;
@@ -96,11 +99,11 @@ class Projectile extends Entity {
 
 			default:
 				for( e in Entity.ALL ) {
-					if( e.destroyed || !e.is(SampleEnemy) )
+					if( e.destroyed || !e.is(MitosisEnemy) )
 						continue;
 
 					if( Lib.rectangleOverlaps(left, top, wid, hei, e.left, e.top, e.wid, e.hei) ) {
-						var enemy = e.as(SampleEnemy);
+						var enemy = e.as(MitosisEnemy);
 						enemy.kill(this);
 						strategy.onEnemyHit(this, enemy);
 						break;
@@ -120,3 +123,5 @@ class Projectile extends Entity {
 		return right < 0 || left > level.pxWid || bottom < 0 || top > level.pxHei;
 	}
 }
+
+

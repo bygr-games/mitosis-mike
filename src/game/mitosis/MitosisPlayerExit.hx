@@ -1,6 +1,6 @@
-package sample;
+﻿package mitosis;
 
-class SamplePlayerExit extends Entity {
+class MitosisPlayerExit extends Entity {
 	static inline var TAG_STEP = 10;
 	static inline var MAX_TAG_VALUE = 100;
 
@@ -41,3 +41,4 @@ class SamplePlayerExit extends Entity {
 		updateTag();
 	}
 }
+

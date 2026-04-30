@@ -1,4 +1,4 @@
-package sample;
+﻿package mitosis.enemies;
 
 /**
 	Red Enemy Strategy: stays in place and jumps constantly.
@@ -11,11 +11,11 @@ class RedEnemyStrategy extends BaseEnemyStrategy {
 		super();
 	}
 
-	override public function initHitbox(enemy:SampleEnemy):Void {
+	override public function initHitbox(enemy:MitosisEnemy):Void {
 		setHitbox(enemy, 16, 16);
 	}
 
-	override public function update(enemy:SampleEnemy):Void {
+	override public function update(enemy:MitosisEnemy):Void {
 		applyGravityIfAirborne(enemy);
 
 		// Try to jump
@@ -24,3 +24,5 @@ class RedEnemyStrategy extends BaseEnemyStrategy {
 		}
 	}
 }
+
+

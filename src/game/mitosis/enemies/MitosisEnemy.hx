@@ -1,4 +1,7 @@
-package sample;
+﻿package mitosis.enemies;
+
+import mitosis.MitosisPlayer;
+import mitosis.projectiles.Projectile;
 
 private typedef EnemyTypeDef = {
 	var id : String;
@@ -12,7 +15,7 @@ private typedef EnemyTypeDef = {
 }
 
 /**
-	SampleEnemy is an Entity that spawns from level data and exhibits different
+	MitosisEnemy is an Entity that spawns from level data and exhibits different
 	behaviors based on its strategy pattern implementation.
 	
 	Supported types:
@@ -22,7 +25,7 @@ private typedef EnemyTypeDef = {
 	- "scared": runs away from nearby players and does not hurt them on contact
 	- "spike": stays in place and splits players on contact
 **/
-class SampleEnemy extends Entity {
+class MitosisEnemy extends Entity {
 	public static inline var COLLISION_EPSILON = 0.001;
 	static inline var DEFAULT_ENEMY_TYPE = "saw";
 	static final ENEMY_DEFS = initEnemyDefs();
@@ -424,8 +427,8 @@ class SampleEnemy extends Entity {
 
 		if( !isHazard() ) {
 			for( e in Entity.ALL )
-				if( !e.destroyed && e!=this && e.is(SampleEnemy) ) {
-					var other = e.as(SampleEnemy);
+				if( !e.destroyed && e!=this && e.is(MitosisEnemy) ) {
+					var other = e.as(MitosisEnemy);
 					if( !other.isAlive() || !other.isHazard() )
 						continue;
 
@@ -444,3 +447,5 @@ class SampleEnemy extends Entity {
 		updateAnimState();
 	}
 }
+
+

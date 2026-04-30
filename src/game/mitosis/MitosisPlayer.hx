@@ -1,14 +1,17 @@
-package sample;
+﻿package mitosis;
+
+import mitosis.enemies.MitosisEnemy;
+import mitosis.projectiles.Projectile;
 
 /**
-	SamplePlayer is an Entity with some extra functionalities:
+	MitosisPlayer is an Entity with some extra functionalities:
 	- user controlled (using gamepad or keyboard)
 	- falls with gravity
 	- has basic level collisions
 	- some squash animations, because it's cheap and they do the job
 **/
 
-class SamplePlayer extends Entity {
+class MitosisPlayer extends Entity {
 	static inline var BASE_WIDTH = 16;
 	static inline var BASE_HEIGHT = 32;
 	static inline var SPLIT_COUNT = 2;
@@ -40,7 +43,7 @@ class SamplePlayer extends Entity {
 	static var levelStartByUid : Map<Int,{ cx:Int, cy:Int }>;
 	var fallbackBitmap : Null<h2d.Bitmap>;
 	var sizeLevel(default,null) : Int;
-	var pullTarget : Null<SampleRecombobulator>;
+	var pullTarget : Null<MitosisRecombobulator>;
 
 	var animIdle : Null<String>;
 	var animRun : Null<String>;
@@ -56,11 +59,11 @@ class SamplePlayer extends Entity {
 		return Std.int(Math.floor(v / Const.GRID));
 	}
 
-	inline function isSolidPlayer(other:SamplePlayer) {
+	inline function isSolidPlayer(other:MitosisPlayer) {
 		return other!=this && !other.destroyed && other.isAlive();
 	}
 
-	inline function isSolidEnemy(other:SampleEnemy) {
+	inline function isSolidEnemy(other:MitosisEnemy) {
 		return !other.destroyed && other.isAlive();
 	}
 
@@ -72,37 +75,37 @@ class SamplePlayer extends Entity {
 		return isSpawnImmune();
 	}
 
-	inline function overlapsPlayerX(other:SamplePlayer) {
+	inline function overlapsPlayerX(other:MitosisPlayer) {
 		return right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON;
 	}
 
-	inline function overlapsPlayerY(other:SamplePlayer) {
+	inline function overlapsPlayerY(other:MitosisPlayer) {
 		return bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
 	}
 
-	inline function overlapsEnemyX(other:SampleEnemy) {
+	inline function overlapsEnemyX(other:MitosisEnemy) {
 		return right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON;
 	}
 
-	inline function overlapsEnemyY(other:SampleEnemy) {
+	inline function overlapsEnemyY(other:MitosisEnemy) {
 		return bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
 	}
 
-	inline function isSolidRecombobulator(other:SampleRecombobulator) {
+	inline function isSolidRecombobulator(other:MitosisRecombobulator) {
 		if( isBeingPulledInto(other) )
 			return false;
 		return !other.destroyed && other.isDeactivated();
 	}
 
-	inline function overlapsRecombobulatorX(other:SampleRecombobulator) {
+	inline function overlapsRecombobulatorX(other:MitosisRecombobulator) {
 		return right > other.left + COLLISION_EPSILON && left < other.right - COLLISION_EPSILON;
 	}
 
-	inline function overlapsRecombobulatorY(other:SampleRecombobulator) {
+	inline function overlapsRecombobulatorY(other:MitosisRecombobulator) {
 		return bottom > other.top + COLLISION_EPSILON && top < other.bottom - COLLISION_EPSILON;
 	}
 
-	inline function recombobulatorGridsOverlapVertically(other:SampleRecombobulator) : Bool {
+	inline function recombobulatorGridsOverlapVertically(other:MitosisRecombobulator) : Bool {
 		var playerTopCy = pxToLevelCoord(top + COLLISION_EPSILON);
 		var playerBottomCy = pxToLevelCoord(bottom - COLLISION_EPSILON);
 		var recombTopCy = pxToLevelCoord(other.top + COLLISION_EPSILON);
@@ -111,11 +114,11 @@ class SamplePlayer extends Entity {
 		return playerBottomCy >= recombTopCy && playerTopCy <= recombBottomCy;
 	}
 
-	inline function recombobulatorLeftGridColumn(other:SampleRecombobulator) : Int {
+	inline function recombobulatorLeftGridColumn(other:MitosisRecombobulator) : Int {
 		return pxToLevelCoord(other.left + COLLISION_EPSILON);
 	}
 
-	inline function recombobulatorRightGridColumn(other:SampleRecombobulator) : Int {
+	inline function recombobulatorRightGridColumn(other:MitosisRecombobulator) : Int {
 		return pxToLevelCoord(other.right - COLLISION_EPSILON);
 	}
 
@@ -152,8 +155,8 @@ class SamplePlayer extends Entity {
 					return false;
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var other = e.as(SamplePlayer);
+			if( !e.destroyed && e.is(MitosisPlayer) ) {
+				var other = e.as(MitosisPlayer);
 				if( !isSolidPlayer(other) )
 					continue;
 
@@ -164,8 +167,8 @@ class SamplePlayer extends Entity {
 			}
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleEnemy) ) {
-				var other = e.as(SampleEnemy);
+			if( !e.destroyed && e.is(MitosisEnemy) ) {
+				var other = e.as(MitosisEnemy);
 				if( !isSolidEnemy(other) )
 					continue;
 
@@ -176,8 +179,8 @@ class SamplePlayer extends Entity {
 			}
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleRecombobulator) ) {
-				var other = e.as(SampleRecombobulator);
+			if( !e.destroyed && e.is(MitosisRecombobulator) ) {
+				var other = e.as(MitosisRecombobulator);
 				if( !isSolidRecombobulator(other) )
 					continue;
 
@@ -249,8 +252,8 @@ class SamplePlayer extends Entity {
 				best = probeCx * Const.GRID;
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var other = e.as(SamplePlayer);
+			if( !e.destroyed && e.is(MitosisPlayer) ) {
+				var other = e.as(MitosisPlayer);
 				if( !isSolidPlayer(other) || !overlapsPlayerY(other) )
 					continue;
 
@@ -261,8 +264,8 @@ class SamplePlayer extends Entity {
 
 		if( collidesWithEnemies() )
 			for( e in Entity.ALL )
-				if( !e.destroyed && e.is(SampleEnemy) ) {
-					var other = e.as(SampleEnemy);
+				if( !e.destroyed && e.is(MitosisEnemy) ) {
+					var other = e.as(MitosisEnemy);
 					if( !isSolidEnemy(other) || !overlapsEnemyY(other) )
 						continue;
 
@@ -272,8 +275,8 @@ class SamplePlayer extends Entity {
 				}
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleRecombobulator) ) {
-				var other = e.as(SampleRecombobulator);
+			if( !e.destroyed && e.is(MitosisRecombobulator) ) {
+				var other = e.as(MitosisRecombobulator);
 				if( !isSolidRecombobulator(other) || !recombobulatorGridsOverlapVertically(other) )
 					continue;
 
@@ -298,8 +301,8 @@ class SamplePlayer extends Entity {
 				best = (probeCx + 1) * Const.GRID;
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var other = e.as(SamplePlayer);
+			if( !e.destroyed && e.is(MitosisPlayer) ) {
+				var other = e.as(MitosisPlayer);
 				if( !isSolidPlayer(other) || !overlapsPlayerY(other) )
 					continue;
 
@@ -310,8 +313,8 @@ class SamplePlayer extends Entity {
 
 		if( collidesWithEnemies() )
 			for( e in Entity.ALL )
-				if( !e.destroyed && e.is(SampleEnemy) ) {
-					var other = e.as(SampleEnemy);
+				if( !e.destroyed && e.is(MitosisEnemy) ) {
+					var other = e.as(MitosisEnemy);
 					if( !isSolidEnemy(other) || !overlapsEnemyY(other) )
 						continue;
 
@@ -321,8 +324,8 @@ class SamplePlayer extends Entity {
 				}
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleRecombobulator) ) {
-				var other = e.as(SampleRecombobulator);
+			if( !e.destroyed && e.is(MitosisRecombobulator) ) {
+				var other = e.as(MitosisRecombobulator);
 				if( !isSolidRecombobulator(other) || !recombobulatorGridsOverlapVertically(other) )
 					continue;
 
@@ -349,8 +352,8 @@ class SamplePlayer extends Entity {
 				best = probeCy * Const.GRID;
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var other = e.as(SamplePlayer);
+			if( !e.destroyed && e.is(MitosisPlayer) ) {
+				var other = e.as(MitosisPlayer);
 				if( !isSolidPlayer(other) || !overlapsPlayerX(other) )
 					continue;
 
@@ -361,8 +364,8 @@ class SamplePlayer extends Entity {
 
 		if( collidesWithEnemies() )
 			for( e in Entity.ALL )
-				if( !e.destroyed && e.is(SampleEnemy) ) {
-					var other = e.as(SampleEnemy);
+				if( !e.destroyed && e.is(MitosisEnemy) ) {
+					var other = e.as(MitosisEnemy);
 					if( !isSolidEnemy(other) || !overlapsEnemyX(other) )
 						continue;
 
@@ -372,8 +375,8 @@ class SamplePlayer extends Entity {
 				}
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleRecombobulator) ) {
-				var other = e.as(SampleRecombobulator);
+			if( !e.destroyed && e.is(MitosisRecombobulator) ) {
+				var other = e.as(MitosisRecombobulator);
 				if( !isSolidRecombobulator(other) || !overlapsRecombobulatorX(other) )
 					continue;
 
@@ -395,8 +398,8 @@ class SamplePlayer extends Entity {
 				best = (probeCy + 1) * Const.GRID;
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var other = e.as(SamplePlayer);
+			if( !e.destroyed && e.is(MitosisPlayer) ) {
+				var other = e.as(MitosisPlayer);
 				if( !isSolidPlayer(other) || !overlapsPlayerX(other) )
 					continue;
 
@@ -407,8 +410,8 @@ class SamplePlayer extends Entity {
 
 		if( collidesWithEnemies() )
 			for( e in Entity.ALL )
-				if( !e.destroyed && e.is(SampleEnemy) ) {
-					var other = e.as(SampleEnemy);
+				if( !e.destroyed && e.is(MitosisEnemy) ) {
+					var other = e.as(MitosisEnemy);
 					if( !isSolidEnemy(other) || !overlapsEnemyX(other) )
 						continue;
 
@@ -418,8 +421,8 @@ class SamplePlayer extends Entity {
 				}
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleRecombobulator) ) {
-				var other = e.as(SampleRecombobulator);
+			if( !e.destroyed && e.is(MitosisRecombobulator) ) {
+				var other = e.as(MitosisRecombobulator);
 				if( !isSolidRecombobulator(other) || !overlapsRecombobulatorX(other) )
 					continue;
 
@@ -436,8 +439,8 @@ class SamplePlayer extends Entity {
 			return true;
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var other = e.as(SamplePlayer);
+			if( !e.destroyed && e.is(MitosisPlayer) ) {
+				var other = e.as(MitosisPlayer);
 				if( !isSolidPlayer(other) )
 					continue;
 
@@ -447,8 +450,8 @@ class SamplePlayer extends Entity {
 
 		if( collidesWithEnemies() )
 			for( e in Entity.ALL )
-				if( !e.destroyed && e.is(SampleEnemy) ) {
-					var other = e.as(SampleEnemy);
+				if( !e.destroyed && e.is(MitosisEnemy) ) {
+					var other = e.as(MitosisEnemy);
 					if( !isSolidEnemy(other) )
 						continue;
 
@@ -526,8 +529,8 @@ class SamplePlayer extends Entity {
 		var count = 0;
 
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var player = e.as(SamplePlayer);
+			if( !e.destroyed && e.is(MitosisPlayer) ) {
+				var player = e.as(MitosisPlayer);
 				if( !player.isAlive() )
 					continue;
 
@@ -637,7 +640,7 @@ class SamplePlayer extends Entity {
 		if( from==null || !isSmallestSize() )
 			return false;
 
-		if( from.is(SampleEnemy) )
+		if( from.is(MitosisEnemy) )
 			return true;
 
 		if( from.is(Projectile) ) {
@@ -724,11 +727,11 @@ class SamplePlayer extends Entity {
 		return pullTarget!=null && !destroyed && isAlive();
 	}
 
-	public inline function isBeingPulledInto(target:SampleRecombobulator) {
+	public inline function isBeingPulledInto(target:MitosisRecombobulator) {
 		return pullTarget==target && isBeingPulled();
 	}
 
-	public function startPullInto(target:SampleRecombobulator) {
+	public function startPullInto(target:MitosisRecombobulator) {
 		if( target==null || destroyed || !isAlive() )
 			return;
 
@@ -782,7 +785,7 @@ class SamplePlayer extends Entity {
 
 		if( hasNextSizeLevel() ) {
 			for( i in 0...SPLIT_COUNT ) {
-				var child = new SamplePlayer(spawnX, spawnY, i==0, childSizeLevel);
+				var child = new MitosisPlayer(spawnX, spawnY, i==0, childSizeLevel);
 				child.placeAtNearestSafeSplitPosition(spawnX, spawnY, i==0 ? -1 : 1);
 				child.applySplitFling(i);
 			}
@@ -802,7 +805,7 @@ class SamplePlayer extends Entity {
 		dir = horizontalSpeed>=0 ? 1 : -1;
 	}
 
-	function resolveEnemyPush(enemy:SampleEnemy) {
+	function resolveEnemyPush(enemy:MitosisEnemy) {
 		var overlapLeft = right - enemy.left;
 		var overlapRight = enemy.right - left;
 		var overlapUp = bottom - enemy.top;
@@ -842,7 +845,7 @@ class SamplePlayer extends Entity {
 		}
 	}
 
-	function resolvePlayerPush(other:SamplePlayer) {
+	function resolvePlayerPush(other:MitosisPlayer) {
 		var overlapLeft = right - other.left;
 		var overlapRight = other.right - left;
 		var overlapUp = bottom - other.top;
@@ -983,8 +986,8 @@ class SamplePlayer extends Entity {
 
 		// Player body contact
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayer) ) {
-				var other = e.as(SamplePlayer);
+			if( !e.destroyed && e.is(MitosisPlayer) ) {
+				var other = e.as(MitosisPlayer);
 				if( !isSolidPlayer(other) )
 					continue;
 
@@ -996,8 +999,8 @@ class SamplePlayer extends Entity {
 
 		// Start next level when touching a PlayerExit entity
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SamplePlayerExit) ) {
-				var exit = e.as(SamplePlayerExit);
+			if( !e.destroyed && e.is(MitosisPlayerExit) ) {
+				var exit = e.as(MitosisPlayerExit);
 				if( !Lib.rectangleOverlaps(left, top, wid, hei, exit.left, exit.top, exit.wid, exit.hei) )
 					continue;
 
@@ -1012,8 +1015,8 @@ class SamplePlayer extends Entity {
 
 		// Feed Recombobulators when touched
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleRecombobulator) ) {
-				var recombobulator = e.as(SampleRecombobulator);
+			if( !e.destroyed && e.is(MitosisRecombobulator) ) {
+				var recombobulator = e.as(MitosisRecombobulator);
 				if( !Lib.rectangleOverlaps(left, top, wid, hei, recombobulator.left, recombobulator.top, recombobulator.wid, recombobulator.hei) )
 					continue;
 				if( recombobulator.isDeactivated() )
@@ -1026,8 +1029,8 @@ class SamplePlayer extends Entity {
 
 		// Enemy body contact
 		for( e in Entity.ALL )
-			if( !e.destroyed && e.is(SampleEnemy) ) {
-				var enemy = e.as(SampleEnemy);
+			if( !e.destroyed && e.is(MitosisEnemy) ) {
+				var enemy = e.as(MitosisEnemy);
 				if( !Lib.rectangleOverlaps(left, top, wid, hei, enemy.left, enemy.top, enemy.wid, enemy.hei) )
 					continue;
 
@@ -1060,3 +1063,4 @@ private class NegativeColorShader extends hxsl.Shader {
 		intensity = 0;
 	}
 }
+

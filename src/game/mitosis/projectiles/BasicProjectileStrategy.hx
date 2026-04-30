@@ -1,4 +1,4 @@
-package sample;
+﻿package mitosis.projectiles;
 
 class BasicProjectileStrategy extends BaseProjectileStrategy {
 
@@ -6,3 +6,4 @@ class BasicProjectileStrategy extends BaseProjectileStrategy {
 		super(0xFFD55A, 0xFFD55A, 0xFF6D3A, true, 1.2, 0.16);
 	}
 }
+

@@ -1,9 +1,11 @@
-package sample;
+﻿package mitosis;
+
+import mitosis.enemies.MitosisEnemy;
 
 /**
 	This small class creates game entities (player and enemies) from level data
 **/
-class SampleGame extends Game {
+class MitosisGame extends Game {
 	public function new() {
 		super();
 	}
@@ -13,7 +15,7 @@ class SampleGame extends Game {
 
 		if( level.data.l_Entities.all_PlayerExit != null ) {
 			for( exitSpawn in level.data.l_Entities.all_PlayerExit )
-				new SamplePlayerExit(exitSpawn.cx, exitSpawn.cy);
+				new MitosisPlayerExit(exitSpawn.cx, exitSpawn.cy);
 		}
 
 		var recombobulatorSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_Recombobulator");
@@ -25,42 +27,44 @@ class SampleGame extends Game {
 				if( rawRequired==null )
 					rawRequired = Reflect.field(recombobulatorSpawn, "RequiredPercentage");
 				var requiredPercentage = rawRequired==null ? 0.0 : cast rawRequired;
-				new SampleRecombobulator(cx, cy, requiredPercentage);
+				new MitosisRecombobulator(cx, cy, requiredPercentage);
 			}
 		}
 		
 		// Spawn player
-		new SamplePlayer();
+		new MitosisPlayer();
 
 		// Spawn saw enemies
 		if( level.data.l_Entities.all_SawEnemy != null ) {
 			for( sawSpawn in level.data.l_Entities.all_SawEnemy )
-				new SampleEnemy(sawSpawn.cx, sawSpawn.cy, "saw");
+				new MitosisEnemy(sawSpawn.cx, sawSpawn.cy, "saw");
 		}
 
 		// Spawn red enemies
 		if( level.data.l_Entities.all_RedEnemy != null ) {
 			for( redSpawn in level.data.l_Entities.all_RedEnemy )
-				new SampleEnemy(redSpawn.cx, redSpawn.cy, "red");
+				new MitosisEnemy(redSpawn.cx, redSpawn.cy, "red");
 		}
 
 		// Spawn shooting enemies
 		if( level.data.l_Entities.all_ShootingEnemy != null ) {
 			for( shootingSpawn in level.data.l_Entities.all_ShootingEnemy )
-				new SampleEnemy(shootingSpawn.cx, shootingSpawn.cy, "shooting");
+				new MitosisEnemy(shootingSpawn.cx, shootingSpawn.cy, "shooting");
 		}
 
 		// Spawn scared enemies
 		if( level.data.l_Entities.all_ScaredEnemy != null ) {
 			for( scaredSpawn in level.data.l_Entities.all_ScaredEnemy )
-				new SampleEnemy(scaredSpawn.cx, scaredSpawn.cy, "scared");
+				new MitosisEnemy(scaredSpawn.cx, scaredSpawn.cy, "scared");
 		}
 
 		// Spawn spike enemies
 		if( level.data.l_Entities.all_SpikeEnemy != null ) {
 			for( spikeSpawn in level.data.l_Entities.all_SpikeEnemy )
-				new SampleEnemy(spikeSpawn.cx, spikeSpawn.cy, "spike");
+				new MitosisEnemy(spikeSpawn.cx, spikeSpawn.cy, "spike");
 		}
 	}
 }
+
+
 

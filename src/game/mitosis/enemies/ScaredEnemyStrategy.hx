@@ -1,4 +1,6 @@
-package sample;
+﻿package mitosis.enemies;
+
+import mitosis.MitosisPlayer;
 
 class ScaredEnemyStrategy extends BaseEnemyStrategy {
 	static inline var DETECTION_RANGE_TILES = 5.0;
@@ -10,11 +12,11 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 		super();
 	}
 
-	override public function initHitbox(enemy:SampleEnemy):Void {
+	override public function initHitbox(enemy:MitosisEnemy):Void {
 		setHitbox(enemy, 16, 32);
 	}
 
-	override public function update(enemy:SampleEnemy):Void {
+	override public function update(enemy:MitosisEnemy):Void {
 		applyGravityIfAirborne(enemy);
 
 		var player = getClosestNearbyPlayer(enemy);
@@ -32,13 +34,13 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 			enemy.vBase.addX(fleeDir * runSpeed);
 	}
 
-	function getClosestNearbyPlayer(enemy:SampleEnemy):SamplePlayer {
+	function getClosestNearbyPlayer(enemy:MitosisEnemy):MitosisPlayer {
 		return findClosestPlayer(enemy, function(origin, player) {
 			return origin.distCase(player);
 		}, DETECTION_RANGE_TILES);
 	}
 
-	function tryClimbStep(enemy:SampleEnemy, dir:Int):Bool {
+	function tryClimbStep(enemy:MitosisEnemy, dir:Int):Bool {
 		var targetAttachX = enemy.attachX + dir * runSpeed * Const.GRID;
 		var targetAttachY = enemy.attachY - STEP_HEIGHT_PX;
 
@@ -58,15 +60,15 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 		return true;
 	}
 
-	function isPlacementFreeAt(enemy:SampleEnemy, targetAttachX:Float, targetAttachY:Float):Bool {
+	function isPlacementFreeAt(enemy:MitosisEnemy, targetAttachX:Float, targetAttachY:Float):Bool {
 		var targetLeft = targetAttachX - enemy.pivotX * enemy.wid;
 		var targetRight = targetAttachX + (1-enemy.pivotX) * enemy.wid;
 		var targetTop = targetAttachY - enemy.pivotY * enemy.hei;
 		var targetBottom = targetAttachY + (1-enemy.pivotY) * enemy.hei;
-		var leftCx = pxToLevelCoord(targetLeft + SampleEnemy.COLLISION_EPSILON);
-		var rightCx = pxToLevelCoord(targetRight - SampleEnemy.COLLISION_EPSILON);
-		var topCy = pxToLevelCoord(targetTop + SampleEnemy.COLLISION_EPSILON);
-		var bottomCy = pxToLevelCoord(targetBottom - SampleEnemy.COLLISION_EPSILON);
+		var leftCx = pxToLevelCoord(targetLeft + MitosisEnemy.COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(targetRight - MitosisEnemy.COLLISION_EPSILON);
+		var topCy = pxToLevelCoord(targetTop + MitosisEnemy.COLLISION_EPSILON);
+		var bottomCy = pxToLevelCoord(targetBottom - MitosisEnemy.COLLISION_EPSILON);
 
 		for( probeCy in topCy...bottomCy+1 )
 			for( probeCx in leftCx...rightCx+1 )
@@ -76,13 +78,13 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 		return true;
 	}
 
-	function hasGroundSupportAt(enemy:SampleEnemy, targetAttachX:Float, targetAttachY:Float):Bool {
+	function hasGroundSupportAt(enemy:MitosisEnemy, targetAttachX:Float, targetAttachY:Float):Bool {
 		var targetLeft = targetAttachX - enemy.pivotX * enemy.wid;
 		var targetRight = targetAttachX + (1-enemy.pivotX) * enemy.wid;
 		var targetBottom = targetAttachY + (1-enemy.pivotY) * enemy.hei;
-		var leftCx = pxToLevelCoord(targetLeft + SampleEnemy.COLLISION_EPSILON);
-		var rightCx = pxToLevelCoord(targetRight - SampleEnemy.COLLISION_EPSILON);
-		var supportCy = pxToLevelCoord(targetBottom + SampleEnemy.COLLISION_EPSILON);
+		var leftCx = pxToLevelCoord(targetLeft + MitosisEnemy.COLLISION_EPSILON);
+		var rightCx = pxToLevelCoord(targetRight - MitosisEnemy.COLLISION_EPSILON);
+		var supportCy = pxToLevelCoord(targetBottom + MitosisEnemy.COLLISION_EPSILON);
 
 		for( probeCx in leftCx...rightCx+1 )
 			if( enemy.level.hasCollision(probeCx, supportCy) )
@@ -95,3 +97,4 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 		return Std.int(Math.floor(v / Const.GRID));
 	}
 }
+
