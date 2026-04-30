@@ -63,6 +63,20 @@ class MitosisGame extends Game {
 			for( spikeSpawn in level.data.l_Entities.all_SpikeEnemy )
 				new MitosisEnemy(spikeSpawn.cx, spikeSpawn.cy, "spike");
 		}
+
+		// Spawn falling objects
+		var fallingObjectSpawns:Array<Dynamic> = cast Reflect.field(level.data.l_Entities, "all_FallingObject");
+		if( fallingObjectSpawns != null ) {
+			for( fallingObjectSpawn in fallingObjectSpawns ) {
+				var cx:Int = cast Reflect.field(fallingObjectSpawn, "cx");
+				var cy:Int = cast Reflect.field(fallingObjectSpawn, "cy");
+				var rawType:Dynamic = Reflect.field(fallingObjectSpawn, "f_type");
+				if( rawType==null )
+					rawType = Reflect.field(fallingObjectSpawn, "type");
+				var sliceType = rawType==null ? "falling_object" : cast rawType;
+				new FallingObject(cx, cy, sliceType);
+			}
+		}
 	}
 }
 

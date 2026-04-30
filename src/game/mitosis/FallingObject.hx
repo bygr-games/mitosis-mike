@@ -1,0 +1,69 @@
+package mitosis;
+
+class FallingObject extends Entity {
+	static inline var GRAVITY = 0.05;
+
+	var isFalling = false;
+	var sliceType : String;
+
+	public function new(cx:Int, cy:Int, sliceType:String) {
+		super(cx, cy);
+		this.sliceType = sliceType;
+		
+		// Set size based on slice dimensions
+		iwid = 16;
+		ihei = 16;
+		setPivots(0.5, 1);
+		
+		// Set the sprite using the slice
+		updateSprite();
+	}
+
+	function updateSprite() {
+		if( Assets.tiles.exists(sliceType) ) {
+			spr.set(Assets.tiles, sliceType, 0);
+		} else {
+			trace('Warning: FallingObject slice "$sliceType" not found in tiles atlas');
+			spr.setEmptyTexture();
+		}
+	}
+
+	public function startFalling() {
+		isFalling = true;
+	}
+
+	function hasGroundSupport():Bool {
+		var probeCy = Std.int(Math.floor(bottom / Const.GRID));
+		var leftCx = Std.int(Math.floor((left + 0.001) / Const.GRID));
+		var rightCx = Std.int(Math.floor((right - 0.001) / Const.GRID));
+		
+		for( probeCx in leftCx...rightCx+1 )
+			if( level.hasCollision(probeCx, probeCy) )
+				return true;
+		
+		return false;
+	}
+
+	override function fixedUpdate() {
+		if( destroyed )
+			return;
+		
+		if( isFalling ) {
+			// Apply gravity
+			vBase.addY(GRAVITY);
+			
+			// Check if we've landed
+			if( dyTotal > 0 && hasGroundSupport() ) {
+				vBase.clearY();
+				vBump.clearY();
+				yr = 1;
+				isFalling = false;
+				// Object has reached the ground - destroy it
+				destroy();
+				return;
+			}
+		}
+		
+		super.fixedUpdate();
+	}
+}

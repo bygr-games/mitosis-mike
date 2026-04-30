@@ -30,8 +30,15 @@ class ScaredEnemyStrategy extends BaseEnemyStrategy {
 			return;
 
 		var canLeaveLevel = enemy.willExitLevelHorizontally(fleeDir, runSpeed);
-		if( isOnGround(enemy) && !enemy.hasWallInDirectionIgnoringLevelBounds(fleeDir) && ( enemy.hasGroundAhead(fleeDir) || canLeaveLevel ) )
+		if( isOnGround(enemy) && !enemy.hasWallInDirectionIgnoringLevelBounds(fleeDir) && ( enemy.hasGroundAhead(fleeDir) || hasOneTileDropAhead(enemy, fleeDir) || canLeaveLevel ) )
 			enemy.vBase.addX(fleeDir * runSpeed);
+	}
+
+	function hasOneTileDropAhead(enemy:MitosisEnemy, dir:Int):Bool {
+		var probeX = dir > 0 ? enemy.right + MitosisEnemy.COLLISION_EPSILON : enemy.left - MitosisEnemy.COLLISION_EPSILON;
+		var probeCx = pxToLevelCoord(probeX);
+		var probeCy = pxToLevelCoord(enemy.bottom + MitosisEnemy.COLLISION_EPSILON);
+		return !enemy.level.hasCollision(probeCx, probeCy) && enemy.level.hasCollision(probeCx, probeCy + 1);
 	}
 
 	function getClosestNearbyPlayer(enemy:MitosisEnemy):MitosisPlayer {

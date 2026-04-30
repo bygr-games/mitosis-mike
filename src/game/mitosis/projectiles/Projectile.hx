@@ -110,6 +110,18 @@ class Projectile extends Entity {
 					}
 				}
 		}
+
+		// Check for falling object collisions (affects any projectile)
+		for( e in Entity.ALL ) {
+			if( e.destroyed || !e.is(mitosis.FallingObject) )
+				continue;
+
+			if( Lib.rectangleOverlaps(left, top, wid, hei, e.left, e.top, e.wid, e.hei) ) {
+				var fallingObject = e.as(mitosis.FallingObject);
+				fallingObject.startFalling();
+				break;
+			}
+		}
 	}
 
 	inline function hasLevelCollision(testCx:Int, testCy:Int):Bool {
