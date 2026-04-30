@@ -13,7 +13,7 @@ class FallingObject extends Entity {
 		// Set size based on slice dimensions
 		iwid = 16;
 		ihei = 16;
-		setPivots(0.5, 1);
+		setPivots(0.5, 0);
 		
 		// Set the sprite using the slice
 		updateSprite();
