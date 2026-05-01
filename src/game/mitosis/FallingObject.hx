@@ -6,14 +6,13 @@ class FallingObject extends Entity {
 	var isFalling = false;
 	var sliceType : String;
 
-	public function new(cx:Int, cy:Int, sliceType:String) {
-		super(cx, cy);
+	public function new(cx:Int, cy:Int, sliceType:String, ?pivotX:Null<Float>, ?pivotY:Null<Float>) {
+		super(cx, cy, pivotX, pivotY);
 		this.sliceType = sliceType;
 		
 		// Set size based on slice dimensions
 		iwid = 16;
 		ihei = 16;
-		setPivots(0.5, 0);
 		
 		// Set the sprite using the slice
 		updateSprite();

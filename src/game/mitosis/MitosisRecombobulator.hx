@@ -14,8 +14,8 @@ class MitosisRecombobulator extends Entity {
 	var currentTag : Null<String>;
 	var pullStarted = false;
 
-	public function new(cx:Int, cy:Int, requiredPercentage:Float) {
-		super(cx, cy);
+	public function new(cx:Int, cy:Int, requiredPercentage:Float, ?pivotX:Null<Float>, ?pivotY:Null<Float>) {
+		super(cx, cy, pivotX, pivotY);
 		iwid = 16;
 		ihei = 48;
 		this.requiredPercentage = M.fmax(0, requiredPercentage);

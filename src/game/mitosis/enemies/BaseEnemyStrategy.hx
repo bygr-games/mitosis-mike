@@ -22,7 +22,6 @@ class BaseEnemyStrategy implements EnemyStrategy {
 	inline function setHitbox(enemy:MitosisEnemy, width:Int, height:Int):Void {
 		enemy.iwid = width;
 		enemy.ihei = height;
-		enemy.setPivots(0.5, 1);
 	}
 
 	inline function applyGravityIfAirborne(enemy:MitosisEnemy):Void {

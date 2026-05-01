@@ -193,7 +193,7 @@ class Entity {
 	/**
 		Constructor
 	**/
-    public function new(x:Int, y:Int) {
+    public function new(x:Int, y:Int, ?mapPivotX:Null<Float>, ?mapPivotY:Null<Float>) {
         uid = Const.makeUniqueId();
 		ALL.push(this);
 
@@ -201,6 +201,8 @@ class Entity {
 		ucd = new dn.Cooldown(Const.FPS);
 		life = new Stat();
         setPosCase(x,y);
+		if( mapPivotX!=null || mapPivotY!=null )
+			setMapPivot(x, y, mapPivotX, mapPivotY);
 		initLife(1);
 		state = Normal;
 		actions = new RecyclablePool(15, ()->new tools.ChargedAction());
@@ -334,6 +336,17 @@ class Entity {
 	public function setPivots(x:Float, y=-99.) {
 		pivotX = x;
 		pivotY = y>=-98 ? y : x;
+	}
+
+	/**
+		Apply map pivot and align attach point to map grid coordinates.
+		Useful for LDtk entities using per-entity pivot values.
+	**/
+	public function setMapPivot(cx:Int, cy:Int, ?mapPivotX:Null<Float>, ?mapPivotY:Null<Float>) {
+		var px = mapPivotX==null || Math.isNaN(mapPivotX) ? pivotX : mapPivotX;
+		var py = mapPivotY==null || Math.isNaN(mapPivotY) ? pivotY : mapPivotY;
+		setPivots(px, py);
+		setPosPixel((cx + px) * Const.GRID, (cy + py) * Const.GRID);
 	}
 
 	/** Return TRUE if the Entity *center point* is in screen bounds (default padding is +32px) **/

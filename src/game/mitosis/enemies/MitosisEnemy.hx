@@ -219,8 +219,8 @@ class MitosisEnemy extends Entity {
 	/**
 		Create an enemy at a specific grid position with a given type
 	**/
-	public function new(cx:Int, cy:Int, type:String) {
-		super(5, 5);
+	public function new(cx:Int, cy:Int, type:String, ?pivotX:Null<Float>, ?pivotY:Null<Float>) {
+		super(cx, cy, pivotX, pivotY);
 
 		enemyDef = ENEMY_DEFS.get(type.toLowerCase());
 		if( enemyDef==null ) {
@@ -228,7 +228,6 @@ class MitosisEnemy extends Entity {
 			enemyDef = ENEMY_DEFS.get(DEFAULT_ENEMY_TYPE);
 		}
 		enemyType = enemyDef.id;
-		setPosCase(cx, cy);
 
 		// Initialize physics
 		vBase.setFricts(0.84, 0.94);
