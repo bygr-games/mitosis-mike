@@ -1,5 +1,7 @@
 package mitosis;
 
+import mitosis.enemies.MitosisEnemy;
+
 class FallingObject extends Entity {
 	static inline var GRAVITY = 0.05;
 
@@ -43,6 +45,20 @@ class FallingObject extends Entity {
 		return false;
 	}
 
+	function crushCollidingNonHazardEnemies() {
+		for( e in Entity.ALL ) {
+			if( e.destroyed || !e.is(MitosisEnemy) )
+				continue;
+
+			var enemy = e.as(MitosisEnemy);
+			if( enemy.isHazard() )
+				continue;
+
+			if( Lib.rectangleOverlaps(left, top, wid, hei, enemy.left, enemy.top, enemy.wid, enemy.hei) )
+				enemy.kill(this);
+		}
+	}
+
 	override function fixedUpdate() {
 		if( destroyed )
 			return;
@@ -64,5 +80,8 @@ class FallingObject extends Entity {
 		}
 		
 		super.fixedUpdate();
+
+		if( !destroyed && isFalling )
+			crushCollidingNonHazardEnemies();
 	}
 }
