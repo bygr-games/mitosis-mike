@@ -13,11 +13,22 @@ class FallingObject extends Entity {
 		this.sliceType = sliceType;
 		
 		// Set size based on slice dimensions
-		iwid = 16;
-		ihei = 16;
+		applyHitboxByType();
 		
 		// Set the sprite using the slice
 		updateSprite();
+	}
+
+	function applyHitboxByType() {
+		switch( sliceType.toLowerCase() ) {
+			case "lamp":
+				iwid = 48;
+				ihei = 48;
+
+			default:
+				iwid = 16;
+				ihei = 16;
+		}
 	}
 
 	function updateSprite() {
